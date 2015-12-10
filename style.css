@@ -1,0 +1,34 @@
+/* table幅の指定・隣接するセルのボーダーを重ねて表示 */
+#contents table.style {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11pt;
+    font-family: Tahoma;
+}
+
+/* thの指定 */
+#contents table.style th {
+    font-weight: normal;
+    background-color: #F0F0F0;
+    border:1px solid #BFBFBF;
+    text-align: center;
+    #padding: 12px;
+}
+
+/* tr tdの指定 */
+#contents table.style tr {
+    #width: 10%;
+    background-color: #FFFFFF;
+    border:1px solid #BFBFBF;
+    text-align: left;
+    #padding: 12px;
+}
+
+#contents table.style td {
+    #width: 10%;
+    background-color: #FFFFFF;
+    border:1px solid #BFBFBF;
+    #padding: 12px;
+}
+
+

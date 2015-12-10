@@ -1,0 +1,275 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+  </head>
+  <body>
+    <div id="contents">
+      <table class="style">
+        <tr>
+          <td>
+1.                </td>
+          <td>
+Overview                </td>
+        </tr>
+        <tr>
+          <td>
+1.1.                </td>
+          <td>
+Scope This Standard specifies the carrier ENUM interface standard to acquire the URI associated with E.164 numbers between domestic telecommunications carriers.                </td>
+        </tr>
+        <tr>
+          <td>
+1.2.                </td>
+          <td>
+Objective The purpose of this Standard is to improve telecommunications carriers' inter-connectivity by unifying the domestic telecommunications carriers' interpretations about the specifications of the interface to acquire the URI information associated with E.164 numbers.                </td>
+        </tr>
+        <tr>
+          <td>
+1.3.                </td>
+          <td>
+Contents To properly handle the URI acquisition from E.164 numbers by using ENUM, this Standard specifies the following mandatory items with which the domestic telecommunication carriers should comply. (1) Carrier ENUM interface a) DNS-related items (Subclause 4.1) b) ENUM-related items (Query/Answer) (Subclause 4.2) Moreover, the following item is described as referential information. (2) Sequence and message <strong><font color=red>encoding</font></strong> examples (Appendix i)                </td>
+        </tr>
+        <tr>
+          <td>
+2.             </td>
+          <td>
+Terminologies and abbreviations             </td>
+        </tr>
+        <tr>
+          <td>
+2.1.             </td>
+          <td>
+Terminologies The terms related to this Standard complies with [JT-E164 Sup.2], [RFC 6116] and [RFC 3261]. The following terms are used in this Standard. Term Definition Originating carrier network A network of a carrier that serving an originating user Donor carrier network A network of a carrier that acquired a user's number Terminating carrier network A network of a carrier that serving a terminating user Recipient carrier network A network of a carrier that currently serving a number portability user Block of E.164 numbers A number consisted of CC (Country Code) and NDC (Network Destination Code), which is created by removing SN (Subscriber Number) from an E.164 number [JT-E164 Sup.2]. In Japan, number block is 7 digits because CC equals 81 and NDC is 5 digits. Native number An E.164 number belonging to a block of E.164 numbers assigned to a donor carrier network, which is allocated for non-number portability user. Number portability number An E.164 number allocated for number portability user.             </td>
+        </tr>
+        <tr>
+          <td>
+2.2.             </td>
+          <td>
+Abbreviations The abbreviations used in this Standard are as shown below. CC Country Code DB Data Base DNS Domain Name System ENUM E.164 Number Mapping FQDN Fully Qualified Domain Name IMS IP Multimedia Subsystem Donor carrier network Terminating carrier network Originating carrier network Initial INVITE Initial INVITE ENUM Query ENUM Answer NNI (SIP / <strong><font color=red>SDP</font></strong>) NNI (ENUM / DNS) IP-POI IP Point Of Interconnection IPv4 Internet Protocol Version 4 IPv6 Internet Protocol Version 6 NAPTR The Naming Authority Pointer NDC Network Destination Code SIP Session Initiation Protocol SN Subscriber Number TCP Transmission Control Protocol UDP User Datagram Protocol URI Uniform Resource Identifiers             </td>
+        </tr>
+        <tr>
+          <td>
+3.             </td>
+          <td>
+Architecture Figure 3.1 shows the architecture for the communication using carrier ENUM interface. This Standard specifies the messages (Query/Answer) exchanged over the carrier ENUM interface (NNI (ENUM/DNS) in Figure 3.1) for the communications using SIP among carriers networks such as IMS network.   ENUM/DNS  Figure 3.1/JJ-90.31: Architecture for the communication using ENUM/DNS             </td>
+        </tr>
+        <tr>
+          <td>
+3.1.             </td>
+          <td>
+Number portability method For the number portability method, this Standard specifies the interface specification on the premise of All Call Query method (referring originating DB method) as specified in [JT-E164 Sup.2].             </td>
+        </tr>
+        <tr>
+          <td>
+3.2.             </td>
+          <td>
+DB method For the DB configuration, this Standard specifies the interface specification on the premise of distributed database approach (Solution A, each operator's individual NP data is collected in each operator's individual database (no sharing of NP data among operators)) as specified in [JT-E164 Sup.2]. Note that both Tier0 and Tier1 are not used in this Standard. Although [JT-E164 Sup.2] defines real time DB and non-real time DB, the ENUM/DNS server in this Standard corresponds to the real time DB.             </td>
+        </tr>
+        <tr>
+          <td>
+3.3.             </td>
+          <td>
+Protocol stack Figure 3.3.1 shows the protocol stack of the ENUM/DNS in this Standard. Subclause 4.1 describes DNS-related specifications. Subclause 4.2 describes ENUM-related specifications. Moreover, the support of both IPv4 and IPv6 is mandatory for the carrier ENUM/DNS interface in this Standard.  ENUM   IPv4�^IPv6 TCP�^UDP DNS NAPTR Protocol stack Figure 3.3.1/JJ-90.31: Protocol stack of ENUM/DNS             </td>
+        </tr>
+        <tr>
+          <td>
+3.4.             </td>
+          <td>
+Requirements on telecommunication carriers This Standard's requirements on the telecommunication carrier networks which use the carrier ENUM interface are as shown below. (1) Originating carrier network - The IP address(es) of ENUM/DNS server(es) of a donor carrier network per block of E.164 numbers shall be already known. - It shall be possible to transmit an ENUM Query according to Subclause 4.2.1 in this Standard. (2) Donor carrier network - It shall be possible to provide ENUM/DNS interface for the block of E.164 number acquired by its own telecommunications carrier. - It shall be possible to transmit an ENUM Answer according to Subclause 4.2.2 in this Standard. (3) Terminating carrier network - No requirement exists in this Standard.             </td>
+        </tr>
+        <tr>
+          <td>
+4.             </td>
+          <td>
+ENUM interface             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.             </td>
+          <td>
+DNS This Standard specifies domestic supplemental items based on [RFC 1035] as a standard related to DNS.             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.1.             </td>
+          <td>
+DNS message format The DNS message format complies with Subclause 4.1 in [RFC 1035]. A DNS message consists of header section, query section, answer section, authority section and additional information section. In the following, the DNS message format, the definition of each field and the setting value of each field are described as reference. Figure 4.1.1.1 shows the format of the header section.  0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 bit ID  QR OPCODE AA TC RD RA Z RCODE  QDCOUNT  ANCOUNT  NSCOUNT  ARCOUNT   Figure 4.1.1.1 / JJ-90.31: Format of the header section  Table 4.1.1.1 shows the definition of each field in the the header section. Table 4.1.1.1 / JJ-90.31: Definitions of the fields in the header section Field name Definition Seting value ID Identifier for query Complying with Subclause 4.1.1 in [RFC 1035] QR Message type Complying with Subclause 4.1.1 in [RFC 1035] OPCODE Query type Complying with Subclause 4.1.1 in [RFC 1035] AA Identifier to prove direct response from authority server Complying with Subclause 4.1.1 in [RFC 1035] TC Identifier to indicate whether truncation of data size is performed or not Complying with Subclause 4.1.1 in [RFC 1035] RD Request of recursive query Complying with Subclause 4.1.2.1 in this Standard RA Identifier to indicate the availability of recursive query Complying with Subclause 4.1.1 in [RFC 1035] Z Spare (reserved for future use) Complying with Subclause 4.1.1 in [RFC 1035] RCODE Response Code Complying with Subclause 4.1.1 in [RFC 1035] QDCOUNT The number of entries in the query part Complying with Subclause 4.1.1 in [RFC 1035] ANCOUNT The number of resource records in the answer section Complying with Subclause 4.1.1 in [RFC 1035] NSCOUNT The number of resource records in the authority section Complying with Subclause 4.1.1 in [RFC 1035] ARCOUNT The number of resource records in the additional information section Complying with Subclause 4.1.1 in [RFC 1035]  Figure 4.1.1.2 shows the format of the query section. 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 bit QNAME  QTYPE  QCLASS  Figure 4.1.1.2 / JJ-90.31: Format of the query section  Table 4.1.1.2 shows the definitions of each field in the query section. Table 4.1.1.2 / JJ-90.31: Definitions of the fields in the query part Field name Definition Set value QNAME Domain name to which a query is sent Complying with Subclause 4.1.2 in [RFC 1035] QTYPE Query type Complying with Subclause 4.1.2 in [RFC 1035] QCLASS Query class Complying with Subclause 4.1.2 in [RFC 1035]  Figure 4.1.1.3 shows the format of the resource records which are used in the answer section, the authority section and the additional information section. 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 bit NAME  TYPE  CLASS  TTL  RDLENGTH  RDATA  Figure 4.1.1.3 / JJ-90.31: Format of the resource records  Table 4.1.1.3 shows the explanations about each field in the resource record format. Table 4.1.1.3 / JJ-90.31: Definitions of the fields in the resource record format Field name Definition Set value NAME Name of domain pertained to Complying with Subclause 4.1.3 in [RFC 1035] TYPE Meaning of the information in RDATA field Complying with Subclause 4.1.3 in [RFC 1035] CLASS Class of the information in RDATA field Complying with Subclause 4.1.3 in [RFC 1035] TTL Period of time in which resource record can be cached. Complying with Subclause 4.1.3 in [RFC 1035]. However, it complies with Subclause 4.1.1.1 in this Standard in the case of the answer section. RDLENGTH Length of RDATA field Complying with Subclause 4.1.3 in [RFC 1035]. RDATA Resource data whose format is specified in TYPE field and CLASS field Complying with Subclause 4.1.3 in [RFC 1035]. However, it complies with Subclause 4.2 in this Standard in the case of the answer section.             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.1.1.             </td>
+          <td>
+Other recommendations It is recommended to set the TTL value (the lifetime of cache) and MinimumTTL (the lifetime of negative cache) to 60. The TTL value is cache lifetime. Moreover, it is possible to send a query to the DNS server without using cache even before the cache lifetime expires.             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.2.             </td>
+          <td>
+Basic behavior             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.2.1.             </td>
+          <td>
+DNS query "Recursive query" must be used for DNS query in this Standard. Therefore, it is necessary to set 0 to the recursive desired (RD) field in DNS message.             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.2.2.             </td>
+          <td>
+Reverse lookup This Standard does not specify the reverse lookup from IP address to FQDN.             </td>
+        </tr>
+        <tr>
+          <td>
+4.1.2.3.             </td>
+          <td>
+Return of the final answer In this Standard, in order to reduce the number of DNS messages exchanged on the ENUM/DNS interface, the donor carrier network shall perform resolutions in its own network and return a final answer only to the originating carrier network.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.             </td>
+          <td>
+ENUM             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.1.             </td>
+          <td>
+Query             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.1.1.             </td>
+          <td>
+Format In this Standard, ENUM Query's header section and query section comply with the formats described in Subclause 4.1.1 and 4.1.2 of [RFC 1035].             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.1.2.             </td>
+          <td>
+Basic procedures Regarding to the procedures to create an ENUM Query from an E.164 number, this Standard specifies domestic supplemental items against Clause 3 of [RFC 1035] and Clause 3 of [RFC 6116].             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.1.2.1.             </td>
+          <td>
+E.164 number conversion rules The rules of the conversion from E.164 number to valid domain name to be set to QNAME in the query section of ENUM Query are as shown below. Moreover, ".e164enum.net" shall be set to the top level domain for the rearmost domain of ENUM Query. 1. Removing "+" at the head and visual-separator from E.164 number Example) "+81-3-5297-2571" . "81352972571" 2. Aligning the numbers in reverse Example) "81352972571" . "17527925318" 3. Inserting a period "." between number digits Example) "17527925318" . "1.7.5.2.7.9.2.5.3.1.8" 4. Adding ".e164enum.net " at the end Example) "1.7.5.2.7.9.2.5.3.1.8" . "1.7.5.2.7.9.2.5.3.1.8.e164enum.net."             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.             </td>
+          <td>
+Answer             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.             </td>
+          <td>
+Format In this Standard, ENUM Answer's header section, query section and answer section comply with the formats described in Subclause 4.1.1, 4.1.2 and 4.1.3 of [RFC 1035]. The format of NAPTR resource record to be set to RDATA field in the answer section complies with Subclause 4.1 in [RFC 3403]. Figure 4.2.2.1.1 shows the format of NAPTR resource record.  0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 bit ORDER  PREFERENCE  FLAGS  SERVICES  REGEXP  REPLACEMENT  Figure 4.2.2.1.1 / JJ-90.31: Format of NAPTR resource record  Table 4.2.2.1.1 shows the definition of each field in the NAPTR resource record. Table 4.2.2.1.1 / JJ-90.31: Definition of each field in the NAPTR resource record Field name Definition Setting value ORDER Order of processes in the case that multiple NAPTR resource records exist. Complying with Subclause 4.2.2.1.1 in this Standard PREFERENCE Priority of the processes for NAPTR resource records in which ORDER field's value is the same Complying with Subclause 4.2.2.1.2 in this Standard FLAGS Specifying the behaviors of the resource record Complying with Subclause 4.2.2.1.3 in this Standard SERVICES Specifying the services which are the target of resource records Complying with Subclause 4.2.2.1.4 in this Standard REGEXP This is separated by delimiter (delim-char part) to specify the conversion rules (ere part) based on POSIX expanded regular expression and the strings which are the target of the conversion. Complying with Subclause 4.2.2.1.5 in this Standard REPLACEMENT Used instead of REGEXP at the domain output. (This has exclusive relationship with REGEXP. When this is not used, "." is specified.) Complying with Subclause 4.2.2.1.6 in this Standard  The following Subclauses describe the requirements related to the values populated in each field of NAPTR resource record in this Standard.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.1.             </td>
+          <td>
+ORDER field In this Standard, the ORDER field value shall be set according to [RFC 3403]. The value is determined based on inter-operator agreements.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.2.             </td>
+          <td>
+PREFERENCE field In this Standard, the PREFERENCE field value shall be set according to [RFC 3403]. The value is determined based on inter-operator agreements.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.3.             </td>
+          <td>
+FLAGS field In this Standard, the FLAGS field value shall be set to "u" which outputs URI according to [RFC 6116].             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.4.             </td>
+          <td>
+SERVICES field In this Standard, the "E2U+sip" defined in [RFC 3764] and "E2U+pstn:sip" defined in [RFC 4769] are allowed to be set.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.             </td>
+          <td>
+REGEXP field This Standard specifies domestic supplemental items against the REGEXP field in Clause 3 of [RFC 3402]. (1) The character "!" shall be set to delimiter (delim-char part). (2) The characters "^.*$" shall be set to the conversion part (ere part).             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.1.             </td>
+          <td>
+URI In this Standard, SIP URI shall be specified as the URI method in REGEXP field.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.2.             </td>
+          <td>
+SIP URI format In this Standard, the SIP URI format in REGEXP field complies with the format in [RFC 3261] and [RFC 3966]. Figure 4.2.2.1.5.2.1 shows the SIP URI format. sip:(global-number-digits)(par)@(hostport);(uri-parameter) Figure 4.2.2.1.5.2.1/JJ-90.31: Format of SIP URI  The requirements for SIP URI populated in the REGEXP field differ from services specified by SERVICES field. The components of SIP-URI are described in following Subclauses for each SERVICES fields allowed in this Standard.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.3.             </td>
+          <td>
+global-number-digits part In this Standard, an E.164 number shall be set to global-number-digits part regardless of the values of SERVICES field. This value shall be same as the value of the E.164 number queried in the ENUM Query. Moreover, visual-separator shall not be included.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.4.             </td>
+          <td>
+par part In this Standard, the settings of par part for each SERVICES field are specified below. - When "E2U+sip" [RFC 3764] is set to SERVICES field, tel URI parameter shall not be populated to par part. - When "E2U+pstn:sip" [RFC 4769] is set to SERVICES field, "npdi" tel URI parameter defined in [RFC 4694] shall be populated to par part. Moreover, "rn" tel URI parameter shall be populated to the SIP URI associated with an E.164 number of a number portability user, until the migration of all domestic interconnect interfaces to IP-POI is completed (the setting of "rn" tel URI parameter is optional, when all interconnect interfaces among all domestic operator's networks are IP-POI.). If "rn" tel URI parameter is populated, a network routing number to a Recipient carrier network (Clause 3 of [JT-Q769.1]) shall be set to a value in the global-number form. Other tel URI parameters shall not be included.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.5.             </td>
+          <td>
+hostport part In this Standard, the same domain specified in Request-URI of a SIP request outside an existing dialog shall be populated in the hostport part of a SIP URI in NAPRT resource record regardless of the valuse of SERVICES field. As shown in Table 4.2.2.1.5.5.1, the value of SIP domain differs depending on whether an E.164 number in the query is that of number portability user or not. Table 4.2.2.1.5.5.1 / JJ-90.31: Setting value of hostport part E.164 number in the ENUM Query Setting value E.164 number of number portability user SIP domain of a recipient carrier network is populated. E.164 number other than the above (NOTE) SIP domain of the donor carrier network is populated. NOTE: if an E.164 number is managed in the donor carrier network.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.5.6.             </td>
+          <td>
+uri-parameter part In this Standard, "user=phone" shall be set as the SIP URI parameter set to uri-parameter part regardless of the valuse of SERVICES field. Moreover, other parameters shall not be included.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.1.6.             </td>
+          <td>
+REPLACEMENT field In this Standard, "." shall be populated.             </td>
+        </tr>
+        <tr>
+          <td>
+4.2.2.2.             </td>
+          <td>
+Basic procedures In this Standard, the procedures to search/send an ENUM Answer based on an received ENUM Query complies with Clause 3 in [RFC 1035] and Clause 3 in [RFC 6116]. An ENUM/DNS server in a donor carrier network shall return an answer section including NAPRT resoruce record set to "E2U+sip" in SERVICES field for ENUM Query to the E.164 number belonging to the donor carrier's block of E.164 numbers (CC+NDC). Moreover, in addition to one answer section including "E2U+sip", the another answer section set to including NAPTR resource record set to "E2U+pstn:sip" in SERVICES field shall be set for a E.164 number "+81ABCDEFGHJ" (i.e., Regional fixed-line phone calls, IP phone calls (Category A)), until the migration of all domestic interconnect interfaces to IP-POI is completed. Table 4.2.2.2.1 shows examples of SIP URIs of two NAPTR resource record in ENUM Answer for each E.164 number complying to the format specified in Subclause 4.2.2.1 and its Subclauses. Table 4.2.2.2.1 / JJ-90.31: Examples of SIP URI in ENUM Answer for ENUM Query to each E.164 number E.164 number in ENUM Query SERVICES field value Examples of SIP URI Native number E2U+sip sip:+81422601111@example1.ne.jp;user=phone E2U+pstn:sip sip:+81422601111;npdi@example1.ne.jp;user=phone Number portability number E2U+sip sip:+81422602222@example2.ne.jp;user=phone E2U+pstn:sip sip:+81422602222;npdi;rn=+81422610051@example2.ne.jp;user=phone Unallocated number E2U+sip sip:+81422603333@example1.ne.jp;user=phone E2U+pstn:sip sip:+81422603333;npdi@example1.ne.jp;user=phone             </td>
+        </tr>
+        <tr>
+          <td>
+Appendix i             </td>
+          <td>
+(Informative): Sequence and message <strong><font color=red>encoding</font></strong> examples             </td>
+        </tr>
+        <tr>
+          <td>
+i.1.             </td>
+          <td>
+General This appendix describes examples of general sequence and messages <strong><font color=red>encoding</font></strong> related to ENUM. The examples of sequence and message <strong><font color=red>encoding</font></strong> described in this appendix are just referential information for implementation.             </td>
+        </tr>
+        <tr>
+          <td>
+i.2.             </td>
+          <td>
+ENUM sequence example Appendix Table i.2.1 shows the sequence name described in this appendix and the corresponding clause or Subclause. Moreover, an example in the case that an IMS network uses the carrier ENUM interface specified in this Standard is described. Appendix Table i.2.1 / JJ-90.31: List of described sequence and message <strong><font color=red>encoding</font></strong> examples No. Sequence name Corresponding Subclause 1 Basic ENUM query (Query/Answer) Appendix i.2.1             </td>
+        </tr>
+        <tr>
+          <td>
+i.2.1.             </td>
+          <td>
+Basic ENUM query (Query/Answer) This Subclause describes a sequence and message <strong><font color=red>encoding</font></strong> example when performing basic ENUM query between the originating carrier network and the donor carrier network and acquiring URI information of a number portability user. The values of each field in each table are written with alphanumeric characters and symbols to make it easy to understand; however, values converted to binary are used in actual ENUM Query/Answer. The values in each table is just examples and appropriate values shall be populated for actual ENUM Query/Answer.  Terminating user number: 0422-60-9999 Terminating carrier network's SIP domain name: example2.ne.jp Network routing number: 0422-61-0051 ENUM/DNS server name: ns.example1.ne.jp ENUM/DNS server IP address: 192.0.2.123    F1: ENUM Query F2: ENUM Answer Originating carrier network Donor carrier network       Appendix Table i.2.1.1 / JJ-90.31: Basic ENUM query (Query/Answer) F1: ENUM Query  Field name Set value Header section ID 1 QR 0 OPCODE 0 AA 0 TC 0 RD 0 RA 0 Z 0 RCODE 0 QDCOUNT 1 ANCOUNT 0 NSCOUNT 0 ARCOUNT 0 Query section QNAME 9.9.9.9.0.6.2.2.4.1.8.e164enum.net. QTYPE 35 QCLASS 1   F2: ENUM Answer  Field Set value Header section ID 1 QR 1 OPCODE 0 AA 1 TC 0 RD 0 RA 0 Z 0 RCODE 0 QDCOUNT 1 ANCOUNT 2 NSCOUNT 1 ARCOUNT 1 Query section QNAME 9.9.9.9.0.6.2.2.4.1.8.e164enum.net. QTYPE 35 QCLASS 1 Answer section NAME 9.9.9.9.0.6.2.2.4.1.8.e164enum.net. TYPE 35 CLASS 1 TTL 60 RDLENGTH 63 RDATA ORDER 100 PREFERENCE 10 FLAGS u SERVICES E2U+sip REGEXP !^.*$!sip:+81422609999@example2.ne.jp;user=phone! REPLACEMENT . Answer section NAME 9.9.9.9.0.6.2.2.4.1.8.e164enum.net. TYPE 35 CLASS 1 TTL 60 RDLENGTH 89 RDATA ORDER 100 PREFERENCE 20 FLAGS u SERVICES E2U+pstn:sip REGEXP !^.*$!sip:+81422609999;npdi;rn=+81422610051@example2.ne.jp;user=phone! REPLACEMENT . Authority section NAME 0.6.2.2.4.1.8.e164enum.net. TYPE 2 CLASS 1 TTL 86400 RDLENGTH 18 RDATA ns.example1.ne.jp. Additional information section NAME ns.example1.ne.jp. TYPE 1 CLASS 1 TTL 86400 RDLENGTH 4 RDATA 192.0.2.123               </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

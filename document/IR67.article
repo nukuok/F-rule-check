@@ -1,0 +1,5714 @@
+1 Introduction 
+
+1.1 Overview 
+
+Inter Service Provider IP communications are starting to evolve to support services other 
+than GPRS Roaming. Many, if not all, of these services rely upon DNS. Therefore, it is of 
+utmost importance for the interworking and stability of such services that Service Providers 
+have all the necessary information to hand to ease configuration of their DNS servers upon 
+which such services rely. 
+
+This document is intended to provide guidelines and technical information for those who 
+need to set up and/or maintain DNS servers for inter Service Provider services. This 
+document is not intended to provide a general education on DNS or ENUM. Thus, a 
+reasonable level of technical competence in DNS, ENUM and DNS/ENUM server 
+configuration is assumed throughout this document. 
+
+1.2 Scope 
+
+This GSMA official document provides recommendations on DNS (including ENUM) to 
+facilitate successful interworking of inter-Service Provider services. In particular, guidelines 
+for general and service specific configuration of DNS/ENUM servers, GSMA processes and 
+procedures relating to formats and usage of domain names and sub-domain names, 
+updates to the GRX/IPX Root DNS Server and guidelines and recommendations on GSMA 
+Carrier ENUM. 
+
+Particular attention is given to DNS/ENUM servers connected to the private, inter-Service 
+Provider backbone network known as the "GRX" or "IPX", as described in GSMA PRD 
+IR.34 [12]. 
+
+Out of the scope of this document are vendor specific implementation/architecture options 
+and configuration of DNS/ENUM servers used on the Internet (e.g. those DNS servers 
+attached to the Internet for web site hosting). The only exception to this is the guidelines for 
+sub domains used for any standardised services that specifically use the Internet i.e. those 
+that use the "pub.3gppnetwork.org" domain name. 
+
+1.3 Definition of Acronyms and Abbreviations 
+
+Acronym / 
+Abbreviation 
+
+Description 
+
+CC 
+
+Country Code 
+
+CNAME 
+
+Cannonical Name [record] 
+
+DNS 
+
+Domain Name System 
+
+ENUM 
+
+E.164 Number Mapping 
+
+ESP 
+
+ENUM Service Provider 
+
+FQDN 
+
+Fully Qualified Domain Name 
+
+GPRS 
+
+General Packet Radio Service 
+
+GTP 
+
+GPRS Tunnelling Protocol 
+
+
+
+
+Acronym / 
+Abbreviation 
+
+Description 
+
+IMS 
+
+IP Multimedia Sub-system 
+
+LAN 
+
+Local Area Network 
+
+MCC 
+
+Mobile Country Code 
+
+MMS 
+
+Multimedia Messaging Service 
+
+MNC 
+
+Mobile Network Code 
+
+MNO 
+
+Mobile Network Operator 
+
+MNP 
+
+Mobile Number Portability 
+
+NAI 
+
+Network Access Identifier 
+
+NDC 
+
+National Destination Code 
+
+NNI 
+
+Network-Network Interface 
+
+NP 
+
+Number Portability 
+
+RCS/RCS-e 
+
+Rich Communication Suite/ - enhanced 
+
+SN 
+
+Subscriber Number 
+
+SSL 
+
+Secure Socket Layer 
+
+UNI 
+
+User-Network Interface 
+
+VoLTE 
+
+Voice over LTE 
+
+WLAN 
+
+Wireless LAN 
+
+XCAP 
+
+XML Configuration Access Protocol 
+
+
+
+ 
+
+1.4 Definition of Terms 
+
+Term 
+
+Description 
+
+Delegation 
+
+When a part of a zone is maintained separately, it is delegated to a new 
+nameserver that will have authority of that part of the domain namespace. The 
+original zone will have the nameserver (NS) record for the delegated domain and 
+the new sub-zone will have a new Start Of Authority (SOA) record. 
+
+DNS Client 
+
+See "DNS Resolver". 
+
+Domain 
+Name 
+
+A Domain Name consists of two or more labels separated with a dot (Åe.Åf) character. 
+It starts from the least significant domain on the left, and ends with the most 
+significant domain (or top-level domain) on the right. This naming convention 
+naturally defines a hierarchy. 
+
+DNS 
+Resolver 
+
+Also known as a "DNS Client", this is an entity that is attempting to resolve a given 
+domain name to an address or vice versa. Usually the DNS Resolver is connected 
+to a local DNS caching server that performs the DNS look-ups on behalf of the DNS 
+Resolver. Application programs use function calls, such as ÅegethostbynameÅf, to find 
+the IP address representing a domain name. The name may be specified either as 
+a Fully Qualified Domain Name (FQDN) or only partially. In the latter case, the DNS 
+Resolver appends (a) configured local domain name(s) at the end of the name. 
+
+
+
+
+Term 
+
+Description 
+
+DNS Server 
+
+A DNS Server can be a Nameserver, a Local Caching DNS Server or both. It is 
+common that all DNS Servers cache results from queries for a specific amount of 
+time. 
+
+GRX/IPX 
+
+GPRS roaming eXchange/IP Packet eXchange. The GRX/IPX is an inter-operator 
+IP backbone network that is transparent to subscribers. It is used for back-end 
+routing/tunnelling purposes only. 
+
+Nameserver 
+
+Takes care of DNS Queries sent by DNS Resolvers. The query is answered by 
+using locally stored information (either configured locally or cached from a previous 
+query result), by requesting the information from another DNS Server, or by 
+providing the DNS Resolver with the details of another DNS Server to query. One 
+Nameserver can serve (i.e. be authoritative for) several domains. There may also 
+be several Nameservers serving one domain (usually one is the Primary, and the 
+other/rest are Secondaries). 
+
+Zone 
+
+DNS is a distributed database that contains information of each domain name. Each 
+DNS server maintains a part of the database called a zone. Usually a zone contains 
+information of one domain. However, one zone may contain information about many 
+(sub) domains. Each information element is stored in a record that contains at least 
+a domain name and type (which includes type specific information). 
+
+
+
+ 
+
+1.5 Document Cross-References 
+
+Ref 
+
+Document 
+
+Number 
+
+Title 
+
+1 
+
+IETF RFC 1034 
+
+"Domain Names - Concepts and Facilities" 
+
+2 
+
+IETF RFC 1035 
+
+"Domain Names - Implementation and Specification" 
+
+3 
+
+IETF RFC 3761 
+
+"The E.164 to Uniform Resource Identifiers (URI); Dynamic 
+Delegation Discovery System (DDDS) Application (ENUM)" 
+
+4 
+
+IETF RFC 3401 
+
+"Dynamic Delegation Discovery System (DDDS) Part One: The 
+Comprehensive DDDS" 
+
+5 
+
+IETF RFC 3402 
+
+"Dynamic Delegation Discovery System (DDDS) Part Two: The 
+Algorithm" 
+
+6 
+
+IETF RFC 3403 
+
+"Dynamic Delegation Discovery System (DDDS) Part Three: The 
+Domain Name System (DNS) Database" 
+
+7 
+
+IETF RFC 3404 
+
+"Dynamic Delegation Discovery System (DDDS) Part Four: The 
+Uniform Resource Identifiers (URI)" 
+
+8 
+
+3GPP TS 23.003 
+
+"Numbering, addressing and identification", Version 8.0.0 or 
+higher 
+
+9 
+
+GSMA PRD IR.52 
+
+"MMS Interworking Guidelines" 
+
+10 
+
+GSMA PRD IR.61 
+
+"WLAN Roaming Guidelines" 
+
+11 
+
+GSMA PRD IR.65 
+
+"IMS Roaming and Interworking Guidelines" 
+
+12 
+
+GSMA PRD IR.34 
+
+"Inter-Service Provider IP Backbone Guidelines" 
+
+13 
+
+IETF RFC 2821 
+
+"Simple Mail Transfer Protocol" 
+
+
+
+
+Ref 
+
+Document 
+
+Number 
+
+Title 
+
+14 
+
+IETF RFC 2822 
+
+"Internet Message Format" 
+
+15 
+
+3GPP TS 23.140 
+
+"Multimedia Messaging Service (MMS); Functional description; 
+Stage 2", version 6.7.0 or higher 
+
+16 
+
+IETF RFC 2915 
+
+"The Naming Authority Pointer (NAPTR) DNS Resource Record" 
+
+17 
+
+IETF RFC 3263 
+
+"Session Initiation Protocol (SIP): Locating SIP Servers" 
+
+18 
+
+IETF RFC 2782 
+
+"A DNS RR for specifying the location of services (DNS SRV)" 
+
+19 
+
+3GPP TS 33.220 
+
+"Generic Authentication Architecture (GAA); Generic 
+bootstrapping architecture", version 6.9.0 or higher 
+
+20 
+
+3GPP TS 43.318 
+
+"Generic Access to the A/Gb interface; Stage 2", version 6.6.0 or 
+higher 
+
+21 
+
+3GPP TS 44.318 
+
+"Generic Access (GA) to the A/Gb interface; Mobile GA interface 
+layer 3 specification", version 6.5.0 or higher 
+
+22 
+
+3GPP TS 23.236 
+
+"Intra Domain Connection of RAN Nodes to Multiple CN Nodes", 
+version 6.3.0 or higher 
+
+23 
+
+3GPP TS 23.060 
+
+"General Packet Radio Service (GPRS); Service description; 
+Stage 2", version 6.14.0 or higher 
+
+24 
+
+IETF RFC 3824 
+
+"Using E.164 numbers with the Session Initiation Protocol (SIP)" 
+
+25 
+
+IETF RFC 1032 
+
+"Domain administrators guide" 
+
+26 
+
+3GPP TS 29.060 
+
+"General Packet Radio Service (GPRS); GPRS Tunnelling 
+Protocol (GTP) across the Gn and Gp interface" 
+
+27 
+
+OMA 
+OMA-AD-SUPL-V1_0-20070615-A 
+
+"Secure User Plane Location Architecture; Approved Version 1.0 
+. 15 June 2007" 
+
+28 
+
+3GPP TS 23.401 
+
+"General Packet Radio Service (GPRS) enhancements for 
+Evolved Universal Terrestrial Radio Access Network (E-UTRAN) 
+access" 
+
+29 
+
+3GPP TS 23.402 
+
+"Architecture enhancements for non-3GPP accesses" 
+
+30 
+
+3GPP TS 23.292 
+
+"IP Multimedia System (IMS) centralized services; Stage 2" 
+
+31 
+
+GSMA PRD IN.12 
+
+"ENUM White Paper" 
+
+32 
+
+http://www.iana.org/assignments/enum-
+services 
+
+"ENUMservice Registrations" 
+
+33 
+
+IETF RFC 3764 
+
+"Enumservice registration for Session Initiation Protocol (SIP) 
+Addresses-of-Record" 
+
+34 
+
+IETF RFC 4355 
+
+"IANA Registration for Enumservices email, fax, mms, ems, and 
+sms" 
+
+35 
+
+3GPP TS 24.229 
+
+"IP Multimedia Call Control Protocol based on Session Initiation 
+Protocol (SIP) and Session Description Protocol (SDP); Stage 3", 
+version 7.13.0 or higher. 
+
+
+
+
+Ref 
+
+Document 
+
+Number 
+
+Title 
+
+36 
+
+ITU-T 
+Recommendation 
+E.212 
+
+"The international identification plan for mobile terminals and 
+mobile users" 
+
+37 
+
+ITU-T 
+Recommendation 
+E.164 
+
+"The international public telecommunication numbering plan" 
+
+38 
+
+IETF RFC 3261 
+
+"SIP: Session Initiation Protocol" 
+
+39 
+
+GSMA PRD IR.33 
+
+"GPRS Roaming Guidelines" 
+
+40 
+
+OMA OMA-TS-
+BCAST_Service_Guide-V1_1-20100111-D 
+
+"Service Guide for Mobile Broadcast Services" 
+
+41 
+
+ITU-T E.xxx 
+
+TBC 
+
+42 
+
+GSMA PRD IR.40 
+
+"Guidelines for IP Addressing and AS Numbering for GRX/IPX 
+Network Infrastructure and User Terminals" 
+
+43 
+
+IETF RFC 4769 
+
+"IANA Registration for an Enumservice Containing Public 
+Switched Telephone Network (PSTN) Signalling Information" 
+
+44 
+
+IETF RFC 4825 
+
+ 
+
+"The Extensible Markup Language (XML) Configuration Access 
+Protocol (XCAP)" 
+
+45 
+
+3GPP TS24.623 
+
+"Extensible Markup Language (XML) Configuration Access 
+Protocol (XCAP over the Ut interface for Manipulating 
+Supplementary Services)" 
+
+46 
+
+GSMA PRD IR.92 
+
+"IMS Profile for Voice and SMS" 
+
+47 
+
+RCS Release Docs 
+
+RCS 1-4 Release Documents 
+
+http://www.gsmworld.com/our-
+work/mobile_lifestyle/rcs/rcs_release_docs.htm 
+
+48 
+
+[RCS 1.2.2] 
+
+RCS-e . Advanced Communications: Server and Client 
+Specification Version 1.2.2 
+
+http://www.gsma.com/rcs/wp-content/uploads/2012/03/rcs-
+e_advanced_comms_specification_v1_2_2_approved.pdf 
+
+49 
+
+GSMA PRD IR.21 
+
+GSM Association Roaming Database, Structure and Updating 
+Procedures 
+
+50 
+
+3GPP TS 32.501 
+
+Telecommunication management; Self-configuration of network 
+elements; Concepts and requirements 
+
+51 
+
+3GPP TS 36.300 
+
+Evolved Universal Terrestrial Radio Access (E-UTRA) and 
+Evolved Universal Terrestrial Radio Access Network (E-UTRAN); 
+Overall description; Stage 2 
+
+52 
+
+GSMA PRD IR.88 
+
+LTE and EPC Roaming Guidelines 
+
+53 
+
+3GPP TS 26.346 
+
+Multimedia Broadcast/Multicast Service (MBMS); Protocols and 
+codecs 
+
+
+
+
+2 DNS As Used on the GRX/IPX 
+
+2.1 Introduction 
+
+The Domain Name System is critical to such services as GPRS roaming, inter-PLMN MMS 
+delivery and IMS inter-working. DNS is defined in many IETF RFC documents; the most 
+notable ones are IETF RFC 1034 [1] and IETF RFC 1035 [2]. 
+
+2.2 Architecture 
+
+The DNS on the inter-PLMN IP backbone network (known as the "GRX/IPX") is completely 
+separate from the DNS on the Internet. This is purposely done to add an extra layer of 
+security to the GRX/IPX network, and the nodes within it. The GRX/IPX Root DNS Servers 
+that network operators see are known as "Slave" Root DNS Servers and are commonly 
+provisioned by that Service Provider's GRX/IPX Service Provider. However, these Slave 
+Root DNS Servers can be provisioned by operators themselves if they so wish. 
+
+Each Slave Root DNS Server is synchronised with a "Master" Root DNS Server. This 
+process of synchronisation is known as a "Zone Transfer" and ensures that the data is the 
+same in all GRX/IPX Service Providers' and Operators' Slave Root DNS Servers. The 
+following diagram depicts this: 
+
+ 
+Zone Transfers Zone Transfers 
+Zone Transfers 
+Queries/Responses 
+MNO 1 
+Local 
+DNS 
+GRX 1 
+Slave 
+Root 
+Master 
+Zone 
+File 
+MNO 2 GRX 2 
+SlaveRoot 
+SlaveRoot 
+MNO 3 
+SlaveRoot 
+Master 
+Root 
+
+Figure 1: Backbone Architecture 
+
+
+The data in the Master Root DNS Server is known as the Master Zone File. The population 
+of the data that goes into the Master Zone File has a number of sources, mainly Operators, 
+GRX/IPX Providers and GRX/IPX Providers acting on behalf of Operators. It is also policed 
+and validated by the Master Root DNS Server providers (under authority from GSMA) to 
+
+
+ensure such things as correct sub-domain allocation and usage etc. The following diagram 
+depicts this: 
+
+ 
+GRX Provider 2MNO 3GRX Provider 1Master Root DNS ServerGRXProvidersGSMAMasterZoneFileOperatorsDNS InterfacesAdministration InterfacesProblemsQueriesProblemsQueriesN S InfoN S InfoN S InfoSlave RootDNSMNO 1LocalDNSMNO 2Slave RootDNS&
+Local DNSSlaveRootDNSSlave RootDNS&
+LocalDNSPolicingOperational 
+SupportZone TransfersZone TransfersZone TransfersZone TransfersDNS Queries/Responses
+
+Figure 2: Overall Process Architecture 
+
+
+Finally, the following shows the architecture and the typical signalling involved in resolving 
+hostnames to IP addresses or vice versa. The numbered steps below in the diagram 
+correspond to the numbered message flows: 
+
+ 
+GRX 1 
+Or 
+MNO 1 
+MNO 1 
+GRX 1/2 
+Or 
+MNO 2 
+Resolver 
+Slave Root 
+DNS 
+Authoritative 
+DNS 
+Local Caching 
+DNS 1 
+2 
+3 
+4 
+5 
+6 
+2 
+3 
+
+Figure 3: Resolver Architecture 
+
+
+
+1. The Resolver (for example an SGSN trying to find out the IP address of a GGSN) 
+sends a query for the hostname (for example an APN) for which it wants the IP 
+address, to its local caching DNS server. 
+2. The local caching DNS server checks to see if it has the answer to the query in its 
+cache. If it does it answers immediately (with message 6). Otherwise, it forwards the 
+query on to the Root DNS server. The Root DNS server may reside in Service 
+Provider 1's network or it may reside in the GRX/IPX provider's network (GRX1). The 
+address(es) of the Root DNS server may either be statically configured or be found 
+by using Host Anycasting (see below). 
+3. The Root DNS server returns a referral to the DNS server which is authoritative for 
+the queried domain name of the hostname (for example returns the authoritative 
+server for "mnc015.mcc234.gprs"). 
+4. The local caching DNS server caches the response for a specified amount of time 
+(specified by the root DNS server) and then re sends the query but to the 
+authoritative DNS server as specified by the Root DNS server. The authoritative 
+DNS server may reside in the same GRX/IPX provider's network (GRX1), another 
+GRX/IPX provider's network (GRX2) or the network of the destination Mobile 
+Network Operator (Service Provider 2). (Indeed, it may even reside in the requesting 
+Service Provider's network!) 
+5. The Authoritative DNS server responds to the query with the address of the 
+hostname (or responds with a hostname, if a reverse lookup is being performed) to 
+the Local Caching server in the requesting network (Service Provider 1). 
+6. The Local Caching Server caches the response for a specified amount of time 
+(specified by the authoritative server) and forwards it on to the Resolver. 
+
+
+NOTE 1: The above shows only a typical message flow for DNS resolving on the 
+GRX/IPX. It may take extra queries when an MNO has Multiple levels of 
+authoritative DNS servers (see example below and section Error! 
+Reference source not found.), or for such services/enablers as those that 
+require ENUM. Please refer to section Error! Reference source not 
+found. for more detailed information for each service, and section Error! 
+Reference source not found. for more detailed information on ENUM. 
+
+NOTE 2: In clause 7.11.21 (Section 17) IR.21 [49] provides for MNOs to directly 
+exchange the IP addresses and DNS names of their authoritative DNS 
+servers. This gives the option for an MNO who has received such 
+information from another MNO to configure directly into their local caching 
+servers the authoritative DNS servers IP addresses for the corresponding 
+DNS names. 
+When this option is used, and a query matching a configured DNS name is 
+received, the interaction with the Root DNS server specified in steps 2-4 
+above is bypassed. Instead the query is sent directly to the other operators 
+authoritative DNS server, after which steps 5 and 6 follow. However if the 
+local caching DNS server has cached the answer to the query, the answer 
+is sent directly as specified in step 2. 
+
+ 
+
+
+Instead of having a single Authoritative DNS, an Operator may choose to split the DNS into 
+several levels of DNS for example a First Level DNS which may be authoritative for some of 
+the domain names ÅgownedÅh by the MNO, and one or more Second Level Authoritative 
+DNSes, which may be authoritative for different ÅgsubdomainnamesÅh. where for example a 
+Second Level DNS may be outsourced to 3rd party service provider for a particular service. 
+
+ 
+
+ Figure 1a: Resolver Architecture with multiple levels of Authoritative DNS 
+GRX 1OrMNO 1Resolver2345MNO 118231st LevelAuthoritativeDNSLocal CachingDNSSlave RootDNS2nd LevelAuthoritativeDNS67GRX 1/2OrMNO 2MNO 2Or3rd Pty SPGRX 1/2Or
+
+1. Same as step 1 in the example above 
+2. Same as step 2 in the example above 
+3. Same as step 3 in the example above 
+4. Same as step 4 in the example above 
+5. The First Level Authoritative DNS server may be authoritative for the queried domain 
+name, in which cases it responds to the query with the address of the hostname (or 
+responds with a hostname, if a reverse lookup is being performed) to the Local 
+Caching server in the requesting network (Service Provider 1). In this case the 
+following step process continues with step 8. 
+
+
+Alternatively for certain Ågsubdomain namesÅh, a second level DNS may be 
+authoritative. In this case The First Level Authoritative DNS server returns a referral 
+to the Second Level DNS server which is authoritative for the queried domain name 
+of the hostname (for example returns the authoritative server for 
+"<subdomainname>.mnc015.mcc234.gprs") 
+
+
+6. The local caching DNS server caches the response for a specified amount of time 
+(specified by the First Level Authoritative DNS server) and then re - sends the query 
+to the Second Level Authoritative DNS server as specified by the First Level 
+Authoritative DNS server. The 2nd Level Authoritative DNS server may reside in the 
+same GRX/IPX provider's network (GRX1), another GRX/IPX provider's network 
+(GRX2), the network of the destination Mobile Network Operator (Service Provider 
+2), or in a 3rd Party Service Providers Network. 
+7. The Second Level Authoritative DNS server may respond to the query with the 
+address of the hostname (or responds with a hostname, if a reverse lookup is being 
+performed) to the Local Caching server in the requesting network (Service Provider 
+1). 
+8. The Local Caching Server caches the response for a specified amount of time 
+(specified by the authoritative server) and forwards it on to the Resolver. 
+
+
+NOTE 3: It is recommended that no more than two Levels of Authoritative DNS (that 
+is First Level and Second Level) are provisioned in a resolution "chain". 
+However, an originating Service Provider for ENUM queries needs to be 
+able to make at least as many queries as there are labels in the FQDN. 
+
+NOTE 4: In case the option to directly configure the IP address of another operators 
+DNS server is used as discussed in NOTE 2 above, only IP addresses of 
+First Level Authoritative DNS Server should be configured. 
+
+2.3 Domains 
+
+2.3.1 Introduction 
+
+The following sub-sections detail the domain names that can and cannot be used on the 
+GRX/IPX network. 
+
+In addition to this, the 3GPP have designated a specific sub domain for usage on the 
+Internet's DNS to enable user equipment to locate a specific server on the Internet 
+(terminals cannot see the GRX/IPX therefore a whole new sub domain had to be 
+introduced). For more information on which domains used by 3GPP are intended for which 
+network, see 3GPP TS 23.003 [8], Annex D. 
+
+2.3.2 General 
+
+Unlike the DNS on the Internet, the DNS on the GRX/IPX network is currently much "flatter". 
+That is, there are not so many domains (and sub-domains of thereof), supported and 
+provisioned in the GRX/IPX Root DNS Server. This inherently means that all domain names 
+used by Service Providers and GRX/IPX Providers in any service that utilises the GRX/IPX 
+network are limited to just the domain names detailed in section Error! Reference source 
+not found. below. No other domain name formats are currently supported on the 
+GRX/IPX network! This effectively means a limitation of domain names of ".gprs" and 
+".3gppnetwork.org" at the higher level, and limited beneath to sub-domains of a format 
+based on ITU-T recommendation E.212 [36] number ranges. 
+
+For the ".gprs" domain name, so called "human friendly" sub-domains are also allowed, as 
+specified in 3GPP TS 23.003 [8], section 9. This consists of simply an FQDN reserved in the 
+
+
+Internet domain name space e.g. serviceprovider.fi, serviceprovider.co.uk. However, such 
+sub-domains of ".gprs" are not generally used in the GRX/IPX network and it is 
+recommended not to use these as they can negatively affect GPRS/3G PS roaming. See 
+section Error! Reference source not found. below for more details. 
+
+More information on processes and procedures relating to domain names can be found in 
+section Error! Reference source not found.. 
+
+2.3.3 Domain names used on the GRX/IPX DNS 
+
+The following provides a summary of the domain names that are used by Service Providers 
+on private IP inter-connects and on the GRX/IPX network. These domain names are only 
+resolvable by network equipment and not by end users. That is, they are exclusively used 
+on the Network-Network Interface (NNI) and not on the User-Network Interface (UNI). 
+
+Additional domain names that are resolvable on the GRX/IPX network's DNS may be added 
+in the future. See section Error! Reference source not found. for more details. 
+
+For more details about each domain name and/or sub-domain name, refer to the referenced 
+documents. 
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+.gprs 
+
+Service Provider domains of the form: 
+<Network_Label>.mnc<MNC>.mcc<MCC>.gprs 
+
+ 
+
+Where <Network Label> is the Network Label part of 
+the Access Pont Name (APN) as defined in 3GPP TS 
+23.003 [8], section 9, and <MNC> and <MCC> are 
+the MNC and MCC of the Service Provider 
+represented in decimal (base 10) form, with any 2 
+digit MNC padded out to 3 digits by inserting a zero 
+("0") on the beginning e.g. 15 becomes 015. 
+
+Used in GPRS for the 
+Operator ID in APNs. 
+See section Error! 
+Reference source not 
+found. and also 3GPP 
+TS 23.003 [8], section 
+9, for more information. 
+
+For Support of 2G/3G 
+and EPC coexistence, 
+see also section 4.17 
+
+Each Service Provider 
+is allowed to use only 
+sub-domains 
+consisting of MNC(s) 
+and MCC(s) that are 
+allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+ 
+
+Service Providers 
+should avoid using 
+Network Labels 
+consisting of any of the 
+below defined 
+sub-domains, in order 
+to avoid clashes. 
+
+Domain needs to be 
+resolvable by at 
+least all GPRS/PS 
+roaming partners. 
+
+rac<RAC>.lac<LAC>.mnc<MNC>.mcc<MCC>.gprs 
+
+ 
+
+Where <RAC> and <LAC> are the Routing Area 
+Code and Location Area Code (respectively) 
+represented in hexadecimal (base 16) form, and 
+<MNC> and <MCC> are the MNC and MCC of the 
+Service Provider represented in decimal (base 10) 
+form, with any 2 digit MNC padded out to 3 digits by 
+inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used in inter-SGSN 
+handovers (i.e. Routing 
+Area Updates) by the 
+new SGSN (possibly in 
+a new PLMN) to route 
+to the old SGSN 
+(possibly in the old 
+PLMN). See section 
+Error! Reference 
+source not found. and 
+also 3GPP TS 23.003 
+[8], Annex C.1, for 
+more information. 
+
+Each Service Provider 
+is allowed to use only 
+sub-domains 
+consisting of MNC(s) 
+and MCC(s) that are 
+allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+Domains need to be 
+resolvable by at 
+least all SGSNs to 
+which a UE can 
+hand over (which 
+may be in other 
+networks, if inter 
+network GPRS/PS 
+handovers are 
+supported in a 
+Service Provider's 
+network). 
+
+nri<NRI>.rac<RAC>.lac<LAC>.mnc<MNC>.mcc
+
+Used in Routing Area 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+<MCC>.gprs 
+
+ 
+
+Where <NRI>, <RAC> and <LAC> are the Network 
+Resource Identifier, Routing Area Code and Location 
+Area Code (respectively) represented in hexadecimal 
+(base 16) form, and <MNC> and <MCC> are the 
+MNC and MCC of the Service Provider represented 
+in decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on the 
+beginning e.g. 15 becomes 015. 
+
+Updates by the new 
+SGSN (possibly in a 
+new PLMN) to route to 
+the old SGSN (possibly 
+in the old PLMN), 
+where Intra Domain 
+Connection of RAN 
+Nodes to Multiple CN 
+Nodes (also known as 
+"RAN flex" . see 3GPP 
+TS 23.236 [22]) is 
+applied. See section 
+Error! Reference 
+source not found. and 
+also 3GPP TS 23.003 
+[8], Annex C.1, for 
+more information. 
+
+rnc<RNC>.mnc<MNC>.mcc<MCC>.gprs 
+
+ 
+
+Where <RNC> is the RNC ID represented in 
+hexadecimal (base 16) form, and <MNC> and 
+<MCC> are the MNC and MCC of the Service 
+Provider represented in decimal (base 10) form, with 
+any 2 digit MNC padded out to 3 digits by inserting a 
+zero ("0") on the beginning e.g. 15 becomes 015. 
+
+Used in SRNS 
+relocation to route to 
+the target RNC in the 
+new SGSN (possibly in 
+a new PLMN). See 
+section Error! 
+Reference source not 
+found. and also 3GPP 
+TS 23.003 [8], Annex 
+C.3, for more 
+information. 
+
+mms.mnc<MNC>.mcc<MCC>.gprs 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+
+Used in MMS for the 
+domain name part of 
+the FQDN for MMSCs. 
+
+Domain needs to be 
+resolvable by at 
+least all directly 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+See section Error! 
+Reference source not 
+found. and also 3GPP 
+TS 23.140 [15], section 
+8.4.5.1, for more 
+information. 
+
+connected MMS 
+interworking 
+partners/Service 
+Providers and 
+directly connected 
+MMS Hub 
+Providers. 
+
+<Internet_assigned_domain_name>.gprs 
+
+ 
+
+Where <Internet_assigned_domain_name> is a 
+domain name reserved by the Service Provider on 
+the Internet. An example is "example.com.gprs" 
+
+Used as an alternative 
+Operator ID in APNs 
+(also known as 
+"Human Readable 
+APNs"). See 3GPP TS 
+23.003 [8], section 9, 
+for more details. 
+
+The domain name(s) 
+used must be owned 
+by that Service 
+Provider on the 
+Internet. If the domain 
+name(s) expire on the 
+Internet, they also 
+expire on the 
+GRX/IPX. Care should 
+be taken to ensure 
+there is no clash with 
+the other sub-domains 
+for ".gprs" as defined 
+above. 
+
+Domain needs to be 
+resolvable by at 
+least all GPRS/PS 
+roaming partners. 
+
+.3gppnetwork.org 
+
+ims.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used in IMS in SIP 
+addressing; specifically 
+in the Private and 
+Public Identities used 
+in SIP registration. See 
+section Error! 
+Reference source not 
+found. and 3GPP TS 
+23.003 [8], section 13, 
+for more information. 
+
+Each Service Provider 
+is allowed to use only 
+sub domains 
+consisting of MNC(s) 
+and MCC(s) that are 
+allocated to them by 
+ITU T and their local 
+national numbering 
+authority. 
+
+Domain needs to be 
+resolvable by at 
+least all SIP/IMS 
+based service inter 
+working 
+partners/Service 
+Providers, as well 
+as roaming partners 
+where a visited P-
+CSCF is used. 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+wlan.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used in WLAN 
+inter-working for NAI 
+realms. See section 
+Error! Reference 
+source not found. and 
+3GPP TS 23.003 [8], 
+section 14, for more 
+information. 
+
+ 
+
+Sub domains within 
+the Service Provider's 
+domain (i.e. 
+mnc<MNC>.mcc<MCC>) are documented in 
+3GPP TS 23.003 [8]. It 
+is recommended that 
+Service Providers do 
+not use other sub 
+domains that are not 
+specified in 3GPP, 
+OMA or in this PRD as 
+this could potentially 
+cause a clash of sub 
+domain usage in the 
+future. 
+
+Since this is a 
+realm, not a domain 
+name, it does not 
+necessarily have to 
+be resolvable by 
+external entities. 
+The only time this is 
+used in DNS is 
+when Diameter is 
+used and the next 
+hop is determined 
+by DNS rather than 
+a look up table. 
+
+gan.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used in the Generic 
+Access Network for 
+Full Authentication NAI 
+realms and Fast 
+Re-authentication NAI 
+realms. See section 
+Error! Reference 
+source not found. and 
+3GPP TS 23.003 [8], 
+section 17.2, for more 
+information. 
+
+Since this is a 
+realm, not a domain 
+name, it does not 
+necessarily have to 
+be resolvable by 
+external entities. 
+The only time this is 
+used in DNS is 
+when Diameter is 
+used and the next 
+hop is determined 
+by DNS rather than 
+a look up table. 
+
+epc.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+
+Used in the Enhanced 
+Packet Core (EPC) 
+architecture (previously 
+known as Service 
+Architecture Evolution 
+
+Domain and 
+sub-domains need 
+to be resolvable by 
+EPC/SAE roaming 
+partners. 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+. SAE) for NAIs and 
+FQDNs of EPC related 
+nodes. See section 
+Error! Reference 
+source not found. and 
+3GPP TS 23.003 [8], 
+section 19, for more 
+information. 
+
+For support of EPC 
+and 2G/3G 
+coexistence see also 
+section 4.17 
+
+ics.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used in the IMS 
+Centralised Services 
+feature in SIP 
+addressing. See 
+section Error! 
+Reference source not 
+found. and 3GPP TS 
+23.003 [8], section 20, 
+for more information. 
+
+Domain should only 
+be resolvable for 
+CS roaming 
+partners where an 
+MSC (Server) 
+enhanced for ICS is 
+allowed to be used 
+in that visited 
+partner's network. 
+
+node.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used by Service 
+Providers to provide 
+FQDNs to non-service 
+specific nodes/hosts 
+e.g. DNS/ENUM 
+servers, routers, 
+firewalls etc. See 
+section Error! 
+Reference source not 
+found. of this 
+
+Each Service Provider 
+is allowed to use only 
+sub-domains 
+consisting of MNC(s) 
+and MCC(s) that are 
+allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+Domain needs to be 
+resolvable by at 
+least all 
+roaming/interworking partners for the 
+services used by 
+this domain name. 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+document for more 
+information. 
+
+oam.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and MCC 
+of the Service Provider represented in decimal (base 
+10) form, with any 2 digit MNC padded out to 3 digits 
+by inserting a zero ("0") on the beginning e.g. 15 
+becomes 015. 
+
+Used by eNBs and 
+possibly other network 
+entities in network 
+element self-
+configuration to 
+discover an Operations 
+and Maintenance 
+(OAM) system. See 
+section 4.16 and also 
+3GPP TS 23.003 [8] 
+section 23, for more 
+information. 
+
+Each Service Provider 
+is allowed to use only 
+sub-domains 
+consisting of MNC(s) 
+and MCC(s) that are 
+allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+Domain should only 
+be resolvable by 
+entities within an 
+operatorÅfs network, 
+or in the case of 
+network sharing, 
+within the shared 
+operatorÅfs network. 
+
+unreachable.3gppnetwork.org 
+
+Used in WLAN 
+inter-working, 
+specifically as a realm 
+in the Alternative NAI. 
+Its purpose is to enable 
+the UE to retrieve a list 
+of PLMNs behind a 
+WLAN Access Point. 
+See 3GPP TS 23.003 
+[8], section 14.6, for 
+more information. 
+
+Neither a Service 
+Provider, a GRX/IPX 
+Provider nor any other 
+entity should use this 
+domain name. It is 
+simply reserved to 
+never be used! 
+
+Intentionally not 
+resolvable by any 
+entity. 
+
+.ipxsp.org 
+
+spn<SPN>.ipxsp.org 
+
+ 
+
+Where <SPN> is the Service Provider Number (as 
+defined in ITU-T E.xxx [41]) of the Service Provider. 
+An example is: "spn001.ipxsp.org". 
+
+ 
+
+Not used in any 
+particular service, 
+however, can be used 
+by any Service 
+Provider for any 
+service they see fit. 
+
+Each Service Provider 
+is allowed to use only 
+SPNs that are 
+allocated to them by 
+ITU-T. 
+
+Domain needs to be 
+resolvable by at 
+least all 
+roaming/interworking partners for the 
+services used by 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+Further sub-domains under this are the responsibility 
+of the owning Service Provider. However, it is 
+recommended to use/reserve the sub-domains 
+defined above for the domain 
+"mnc<MNC>.mcc<MCC>.3gppnetwork.org". 
+
+The main intention is to 
+provide a domain 
+name that Service 
+Providers without an 
+E.212 number range 
+allocation can use 
+when connecting to the 
+IPX network. 
+
+this domain name. 
+
+.e164enum.net 
+
+The sub-domains of this domain name correspond to 
+reversed ITU-T E.164 numbers (as defined in ITU-T 
+Recommendation E.164 [37]). 
+
+Used as the domain 
+name for ENUM 
+queries to the GRX/IPX 
+Carrier ENUM as 
+defined in section 5 of 
+the present document. 
+
+Each Service Provider 
+is allowed to use only 
+sub-domains relating 
+to their subscribers. 
+See section 5 for more 
+information. 
+
+See section 5 for 
+more information. 
+
+.in-addr.arpa 
+
+The sub-domains of this domain name correspond to 
+reversed IPv4 addresses that belong to the Service 
+Provider. 
+
+Used for reverse 
+lookups for IPv4 
+addresses i.e. mapping 
+names to IPv4 
+addresses. This is 
+useful when 
+troubleshooting 
+inter-PLMN 
+connections. Due to 
+available tools being 
+pre-configured to use 
+this hierarchy for 
+reverse look-ups, it 
+would not be feasible 
+to use any different 
+TLD. 
+
+ 
+
+Each Service Provider 
+shall populate this 
+domain for IP 
+addresses assigned to 
+them only (except with 
+permission of the 
+actual owner). 
+
+Domain should be 
+resolvable by at 
+least all 
+interworking 
+partners/Service 
+Providers, roaming 
+partners and 
+directly connected 
+GRX/IPX Providers. 
+
+.ip6.arpa 
+
+The sub-domains of this domain name correspond to 
+
+Used for reverse 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+reversed IPv6 addresses that belong to the Service 
+Provider. 
+
+lookups for IPv6 
+addresses i.e. mapping 
+names to IPv6 
+addresses. This is 
+useful when 
+troubleshooting 
+inter-PLMN 
+connections. Due to 
+available tools using 
+this hierarchy for 
+reverse look-ups, it 
+would not be feasible 
+to use any different 
+TLD. 
+
+ipxnetwork.org 
+
+<IPXN>.ipxnetwork.org 
+
+ 
+
+ 
+
+Where IPXN is the IPX provider company name or 
+acronym. It is agreed amongst IPX/GRX providers 
+and assigned on a first come . first served basis (see 
+section 6.2). 
+Further subdomains under this are the responsibility 
+of the owning IPX provider. 
+
+Not used in any 
+particular service, 
+however, can be used 
+by any IPX Provider for 
+any service they see 
+fit. The main intention 
+is to provide a domain 
+name that IPX provider 
+can use for IPX proxies 
+or other equipment. 
+
+One subdomain per 
+IPX provider. An IPX 
+provider shall not use 
+two subdomains. 
+
+Domain needs to be 
+resolvable by at 
+least all roaming/ 
+interworking 
+partners for the 
+services used by 
+this domain name. 
+
+
+
+Table 1: Definitive list of domain names owned by GSMA that are used on the GRX/IPX DNS
+
+
+
+2.3.4 Domain names used on the Internet DNS (and owned by GSMA) 
+
+The following provides a summary of the domain names owned by GSMA that are used by 
+Service Providers on the Internet for 3GPP specific services. For more detail about each 
+domain name and/or sub-domain name, refer to the referenced documents. 
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+pub.3gppnetwork.org 
+
+ 
+
+gan.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in the Generic 
+Access Network for 
+home network 
+domain names in 
+node identifiers. 
+See section 4.7 and 
+3GPP TS 23.003 
+[8], section 17.3, for 
+more information. 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+ 
+
+The host names "psegw" 
+and "pganc" under this 
+sub-domain are reserved 
+for special use, as detailed 
+in 3GPP TS 23.003 [8], 
+section 17.3 
+
+Domains need to be 
+resolvable on the 
+Internet. 
+
+w-apn.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in WLAN 
+inter-working for 
+PDG addressing. 
+See section 4.4 and 
+3GPP TS 23.003 
+[8], section 14, for 
+more information. 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T. The same rules 
+apply for APN constructs, 
+as defined in GSMA PRD 
+IR.34. 
+
+h-
+slp.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+
+Used in the Secure 
+User Plane 
+Location feature for 
+Home SUPL 
+Location Platform 
+addressing. See 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+section 4.8 and 
+OMA-AD-SUPL-V1_0-20070615-A [27] 
+section 7.2.2, for 
+more information. 
+
+national numbering 
+authority. 
+
+bsf.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in the Generic 
+Authentication 
+Architecture for 
+BSF addressing 
+when USIM is used 
+in bootstrapping. 
+See section 4.6 and 
+3GPP TS 23.003 
+[8], section 16, for 
+more information. 
+
+andsf.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in EPC and 
+WLAN inter working 
+(3GPP Rel 8) home 
+agent addressing. 
+See 3GPP TS 
+23.003 [8], section 
+21, for more 
+information. 
+
+ha-
+apn.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU T. The same rules 
+apply for APN constructs, 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+as defined in GSMA PRD 
+IR.34 [12]. 
+
+bcast.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in the OMA 
+Mobile Broadcast 
+Services (BCAST) 
+enabler, version 
+1.1, for Service 
+Guide discovery by 
+a client with access 
+to an IMSI. See 
+section 4.12 and 
+OMA-TS-
+BCAST_Service_Guide-
+V1_1-20100111-D 
+[40] for more 
+information. 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+rcs.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any two (2) digit MNC 
+padded out to three (3) digits by inserting a zero 
+("0") on the beginning for example 15 becomes 
+015. 
+
+Used for the 
+RCS/RCS-e 
+service. 
+
+ 
+
+RCS/RCS-e service 
+may use further 
+subdomain names 
+depending on the 
+RCS/RCS-e service 
+evaluation and 
+developments (for 
+example 
+config.rcs.mnc 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+<MNC>.mcc<MCC>.pub.3gppnetwork.
+org). The 
+description and the 
+use of the 
+subdomain names 
+will be referenced 
+in the RCS/RCS-e 
+specifications 
+where this domain 
+can be used by all 
+RCS/RCS-e 
+versions. 
+
+bsf.ims.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in the Generic 
+Authentication 
+Architecture for 
+BSF addressing 
+when ISIM is used 
+in bootstrapping. 
+See section 4.6 and 
+3GPP TS 23.003 
+[8], section 16, for 
+more information. 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+authority. 
+
+xcap.ims.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+
+Used in 
+supplementary 
+service 
+configuration using 
+XCAP as specified 
+in IR.92 [46]. Also 
+see section 4.13 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+
+
+
+
+Domain name 
+
+Sub-domain(s) 
+
+Explanation 
+
+Rules of Usage 
+
+Resolvability 
+
+the beginning e.g. 15 becomes 015. 
+
+and 3GPP TS 
+23.003 [8], section 
+13.9, for more 
+information. 
+
+authority. 
+
+epdg.epc.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used in 
+inter-working 
+untrusted non-
+3GPP access 
+network to EPC. 
+See section 4.15 
+and 3GPP TS 
+23.003 [8], section 
+19.4.2.9, for more 
+information. 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+
+mbmsbs.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+ 
+
+Where <MNC> and <MCC> are the MNC and 
+MCC of the Service Provider represented in 
+decimal (base 10) form, with any 2 digit MNC 
+padded out to 3 digits by inserting a zero ("0") on 
+the beginning e.g. 15 becomes 015. 
+
+Used by a UE for 
+MBMS Service 
+Announcement 
+Bootstrap. 
+See section 4.18 
+and 3GPP TS 
+23.003 [8], section 
+15.5, for more 
+information. 
+
+Each Service Provider is 
+allowed to use only 
+sub-domains consisting of 
+MNC(s) and MCC(s) that 
+are allocated to them by 
+ITU-T and their local 
+national numbering 
+
+
+
+Table 2: Definitive list of domain names owned by GSMA that are used on the Internet DNS 
+
+
+
+2.3.5 Domain names used on the GRX/IPX DNS for UNI 
+
+Only the domain name "ipxuni.3gppnetwork.org" is defined for domain names of this type 
+(see 3GPP TS 23.003 [8]). However, there are currently no sub-domains reserved under this 
+domain name. 
+
+2.4 Non-service specific hostnames and domains 
+
+Having a consistent naming convention makes it easier for tracing and trouble-shooting as 
+well as easing the maintenance of Service Provider's DNS. The following convention is 
+recommended to achieve these goals. Although the usage of this naming methodology is 
+highly recommended, it is not mandated. 
+
+Service Provider nodes should have names for each interface with the following format: 
+
+<city>-<type>-<nbr> 
+
+where: 
+
+. <city> is the name, or shortened name, of the city/town (or closest, where applicable) 
+where the node is located 
+. <nbr> is a running number of similar devices at the same city (for DNS servers, use 0 
+to indicate the primary DNS Server) 
+. <type> describes device type and should be one of the following for GRX/IPX 
+connected hosts: 
+. dns - DNS/ENUM servers 
+. ggsn 
+. sgsn 
+. rtr - router 
+. fw - firewall 
+
+
+
+
+Additional values for the <type> parameter are for further study for the GRX/IPX. For 
+example, the following are valid hostnames for interfaces on Service Provider nodes: 
+
+. helsinki-ggsn-4 
+
+
+The domain name to append to hostnames for nodes belonging to Service Providers should 
+be the following (see section Error! Reference source not found. for more details on the 
+domain name formats): 
+
+. node.mnc<MNC>.mcc<MCC>.3gppnetwork.org 
+. node.spn< SPN>.ipxsp.org 
+
+
+A combination of the above domain names could be used by a Service Provider; however, 
+for consistency it is better to use only one. 
+
+The following are thus example Fully Qualified Domain Names (FQDNs) for interfaces on 
+Service Provider nodes: 
+
+. helsinki-ggsn-4.node.mnc015.mcc234.3gppnetwork.org 
+
+
+
+. london-dns-23.node.spn001.ipxsp.org 
+
+
+Note that usage of the hostnames and sub-domains specified within this section under 
+"mnc<MNC>.mcc<MCC>.gprs" is now deprecated, and Service Providers are recommended 
+to use either of "mnc<MNC>.mcc<MCC>.3ppgnetwork.org" or "spn<SPN>.ipxsp.org" 
+domains at their earliest convenience. Of course, usage of "mnc<MNC>.mcc<MCC>.gprs" 
+for the uses as stated in section Error! Reference source not found., is not deprecated 
+and should continue as per normal. 
+
+2.5 Host names for the evolved packet Core (EPC) 
+
+The naming of Nodes for the Evolved Packet Core is specified in clause 19 of 3GPP TS 
+23.003 [8] 
+
+ 
+
+2.6 Host names for the IP Multimedia Subsystem (IMS) 
+
+Withn the IP Multimedia Subsystem (IMS) the following Naming Convention for IMS Nodes 
+shall be used <Node name>.<SP Domain Name>, where 
+
+. <Node name> may consist of one or more lables that uniquely identifies the IMS 
+node within the Service Provider network. 
+
+
+To avoid conflicts with future other subdomains to the <SP Domain Name> it can be 
+considered good practice to include Åg.nodeÅh as the right-most label of the <Node 
+Name> 
+
+. <SP Domain Name> is a Domain Name that is owned by the Service provider. 
+
+
+ Ågims.mnc<MNC>.mcc<MCC>.3gppnetwork.orgÅh is the recommended <SP Domain 
+Name> for all IMS Nodes. 
+
+Ågims.mnc<MNC>.mcc<MCC>.3gppnetwork.orgÅh must be used as <SP Domain Name> for 
+IMS Nodes that are individually addressable over the IPX network by SIP or any other 
+protocol, and where those Node Names need to be resolved over the IPX DNS system. 
+
+Examples of IMS nodes that may need to be individually addressable, are all nodes that are 
+addressed using a SIP Route Header, such as the nodes hosting the functionalities of a P-
+CSCF, S-CSCF, TRF, ATCF, and eMSC-S for I2. 
+
+3 General DNS Configuration for Service Providers 
+
+3.1 Introduction 
+
+This section gives some general information on DNS server configuration for operators. For 
+information on configuring DNS servers for specific services, see sections Error! Reference 
+source not found. and Error! Reference source not found.. 
+
+
+3.2 DNS Server Hardware 
+
+It is recommended that operators have physically separate Primary and Secondary DNS 
+servers. This helps provide the greatest service availability and allows for e.g. upgrading 
+DNS Servers without any service interruption. 
+
+3.3 DNS Server Software 
+
+Most commonly ISC BIND (usually version 4 or version 9) is the chosen software supplied 
+by equipment vendors with any new service equipment that utilises a DNS Nameserver. 
+Service Providers and IPX Providers should ensure that only the most secure version is 
+used in their live networks, and all security patches are applied. Note that no particular 
+version of BIND is recommended, because to do so here would provide potentially out of 
+date information to the reader. 
+
+Use of ISC BIND is fine for services which do not necessarily have a large data-fil (for 
+example: GPRS, MMS) but for services such as ENUM where the data-fil can run into 
+thousands, if not millions of resource records, a commercial DNS Nameserver product 
+should be used. 
+
+Such commercial DNS Namesserver solutions can also support legacy DNS data-fil (for 
+example, that used for GPRS roaming), thereby consolidating all operator DNS needs. Note 
+that it is out of the scope of this document, and the GSMA, to provide any recommendations 
+on commercial DNS Nameservers. In fact, diversity of DNS software used by Service 
+Providers and IPX Providers gives a better overall robustness of the DNS on GRX/IPX 
+network. 
+
+3.4 DNS Server naming 
+
+All DNS servers need to have an FQDN assigned to them. For Service Provider DNS 
+servers connected to the GRX/IPX, the naming conventions as specified in section Error! 
+Reference source not found. shall be used. 
+
+3.5 Domain Caching 
+
+Since each service (e.g. GPRS, MMS etc.) has its own domain, a separate TTL value can be 
+set per service. 
+
+When setting the TTL value for a zone, careful consideration must be taken to ensure that 
+the right trade-off is made between performance and consistency. A small TTL value results 
+in a greater signalling overhead, greater processing overhead for the authoritative name 
+server(s) and greater time for a returning a result (an example: GPRS PDP Context set-up 
+time), but the data will be more up-to-date therefore allowing updates to propagate much 
+more quickly. A large TTL value results in a smaller signalling overhead, smaller processor 
+overhead for the authoritative name server(s) and usually shorter time for returning a result 
+to the requesting entity, but the data will be more likely to be out of date and therefore 
+resulting in updates taking longer to propagate. 
+
+It is highly recommended that negative caching is also used (available in ISC BIND versions 
+4.9, 8.x and 9.x and should be available in most commercial DNS solutions). Again, careful 
+
+
+consideration should be taken, considering factors such as the frequency of updates, 
+signalling overhead and processing overhead of the authoritative DNS server for the domain. 
+
+3.6 Reverse Mapping 
+
+Each operator is strongly recommended to provide PTR (Pointer) records for all IP 
+addresses that FQDNs refer to, for example for APNs, MMSC addresses and so on. This is 
+not needed for inter-working to be successful, but rather, is recommended as it aids in 
+trouble shooting/debugging activities such as performing a "traceroute". 
+
+Reverse mapping for IPv4 addressing uses the "in-addr.arpa" domain, and reverse mapping 
+for IPv6 addressing uses "ip6.arpa". See section Error! Reference source not found. for 
+more information. 
+
+3.7 Use of DNS Interrogation Modes 
+
+Two interrogation modes are defined in the DNS specifications: iterative and recursive. 
+
+In Iterative mode, a DNS server interrogates each DNS server in the hierarchy itself, in order 
+to resolve the requested domain name. In Recursive Mode, a DNS server interrogates only 
+the next DNS server in the DNS hierarchy. That DNS Server then takes on responsibility for 
+resolving the requested domain name and provides a final answer back to the original 
+requesting DNS server. Error! Reference source not found. below depicts both iterative 
+and recursive queries: 
+
+ 
+
+ 
+125634125346
+
+Figure 4: Iterative (left) and Recursive (Right) modes of DNS querying 
+
+
+Only Iterative DNS queries shall be used within the GRX/IPX. This not only saves on DNS 
+Server load but also to enables visibility of the source of the original request at the 
+destination, which is lost when using recursive queries. 
+
+If any recursive DNS queries are received by a DNS Server then they should be ignored. 
+The only elements that should issue recursive DNS queries are service nodes issuing DNS 
+requests to their Local Caching DNS Servers e.g. an SGSN querying its Local Caching DNS 
+
+
+Server for an APN (see section Error! Reference source not found. for more information 
+on GPRS, including APN resolution). 
+
+3.8 Use of the GRX/IPX Root DNS Server 
+
+There are two possibilities to arrange DNS hierarchy. The first is for each Service Provider to 
+configure their own authoritative DNS Server for each domain name that needs to be 
+resolved for all inter-working and roaming partner Service Providers. The draw-back of this 
+approach is that it is not scalable because every time a new inter-working and/or roaming 
+partner agreement is made, or even any existing inter-working and/or roaming partner's DNS 
+Server details change, the aforementioned authoritative DNS Server must be updated 
+accordingly. Thus, this could be a potential operational intensive task, and most likely a 
+frequent source for inter-working and roaming problems. This alternative may be fine for 
+small Service Providers with few interworking and/or roaming partners, but is not 
+recommended due to the reasons stated. Therefore, this alternative is not further detailed in 
+the present document. 
+
+Another alternative is to use the common GRX/IPX Root DNS Server, as provided for by the 
+GRX/IPX service provider (see section Error! Reference source not found. for more detail 
+on this architecture). Using the GRX/IPX Root DNS Server enables modified DNS Server 
+details for a Service Provider to automatically propagate to all interworking and roaming 
+partners (subject to caching time). This alternative is the recommended one, and is thus the 
+assumed deployment of authoritative DNS Servers in the rest of the present document. 
+
+3.9 Provisioning of Service Provider's DNS servers 
+
+Service Providers should take care to share all appropriate data to enable all 
+roaming/inter-working partners routing to an authoritative DNS Server, that is a DNS Server 
+where their own domain names can be resolved by others. GSMA IR.21 (PRD or GSMA 
+InfoCentre database) and the GRX/IPX Root DNS should be used to ease such sharing of 
+data, wherever possible. 
+
+Service Providers can provision authoritative DNS Servers themselves or outsource to 
+another entity for example their GRX/IPX Provider. 
+
+Service providers may have all appropriate data available in a single level of authoritative 
+DNS servers, where each authoritative DNS server holds all the appropriate data for the 
+Service Provider. 
+
+Alternatively, Service Providers may choose to divide the appropriate data between a First 
+level Authoritative DNS Servers and 2nd Level Authoritative DNS Servers whereby each 
+2nd-level Authoritative DNS server only holds a subset of the appropriate data for the 
+Service provider. 
+
+When information about DNS servers are exchanged with the GRX/IPX Root DNS and other 
+Service Providers for example via PRD IR.21, and when 2nd-Level Authoritative DNS server 
+are used, it is essential to make a clear distinction between the First level Authoritative DNS 
+servers and 2nd-Level Authoritative DNS servers. This is to ensure that only First level 
+Authoritative DNS server are published in the GRX/IPX Root DNS such that the first query to 
+an Operators DNS always goes the First level Authoritative DNS and that the second level 
+
+
+DNS servers are reached only by means of referrals from the First Level Authoritative DNS 
+server. 
+
+3.10 Resource Records 
+
+Service Providers and IPX Providers should take care to provision only the DNS Resource 
+Records (RRs) that are necessary for service interworking, trouble shooting and O&M 
+(Operations & Maintenance). 
+
+3.11 Support for IPv4 and IPv6 
+
+Support for IPv4 and IPv6 on Service Provider DNS Nameservers is twofold: the ability to 
+serve data relating to IPv4 and IPv6 addresses, and connectivity to/from the nameserver. 
+
+For configuration information in a Nameserver, both IPv4 and IPv6 information can coexist 
+together. Service Providers just need to ensure that the Nameserver software used is 
+capable of supporting the relevant Resource Records (RR) required. The "A" RR is used to 
+hold IPv4 address information and the "AAAA" RR for IPv6 address information. Details on 
+reverse mapping (IPv4/IPv6 address to domain name) are specified in section Error! 
+Reference source not found.. 
+
+For connectivity to a Nameserver, it is highly recommended that all Service Provider 
+Nameservers be reachable using IPv4. Any Nameservers serving IPv6 information should 
+also be reachable using IPv6. 
+
+See GSMA PRD IR.34 [12] and GSMA PRD IR.40 [42] for more information on 
+recommendations relating to IPv4 and IPv6 routing and addressing. 
+
+4 DNS Aspects for Standardised Services 
+
+4.1 Introduction 
+
+This section describes the DNS aspects of standardised services that utilise DNS. 
+Recommendations are made, where appropriate, beyond what is defined in the referenced 
+specifications in order to promote easier service interworking for Service Providers. The list 
+of services below is not exhaustive and other services that utilise DNS on the GRX/IPX can 
+be used. 
+
+If there are discrepancies between the description of the services and the referenced 
+specifications in the following sub-sections, what is stated in the referenced specifications 
+shall prevail. 
+
+4.2 General Packet Radio Service (GPRS) 
+
+4.2.1 Introduction 
+
+GPRS provides for a packet switched bearer in GSM/UMTS networks. Packets are tunnelled 
+between core network nodes that may or may not be in different PLMNs, using the GPRS 
+Tunnelling Protocol (GTP) as defined in 3GPP TS 29.060 [24]. 
+
+
+Note that in UMTS, GPRS is referred to as "Packet Switched" access, however, this is just a 
+naming convention, and the mechanism remains the same. 
+
+For more information on GPRS/Packet Switched access, see GSMA PRD IR.33 [39], 3GPP 
+TS 23.060 [26], and 3GPP TS 29.060 [24]. 
+
+4.2.2 APN resolution in PDP Context activation 
+
+PDP Context activations occur between the SGSN and the GGSN. PDP Contexts are 
+activated to an Access Point Name either provided by the MS, or derived by the network 
+(such as when the MS instructs the SGSN to use a "default" APN). It is the APN that 
+determines to which interface on which GGSN the PDP Context is to be established. See 
+section Error! Reference source not found. for the format of APNs. Further details on the 
+APN can be found in GSMA PRD IR.33 [39]. 
+
+An SGSN and a GGSN can be located in either the HPLMN or VPLMN. Both are in the 
+same network when the subscriber is in the HPLMN and also when the subscriber is 
+roaming in a VPLMN and is using a GGSN in the VPLMN (vGGSN). However, the SGSN 
+and GGSN are in different networks when the subscriber is roaming but using a GGSN in 
+the HPLMN (hGGSN). 
+
+GPRS roaming means the extension of packet switched services offered in the Home PLMN 
+to Visited PLMNs with which the HPLMN has a predefined commercial roaming agreement. 
+
+The necessary DNS queries for resolving an APN in order to activate a PDP Context are 
+described below. Note that the Authoritative DNS Server is usually located in the same 
+PLMN as the GGSN, but can be located elsewhere, for example, in the HPLMN's GRX/IPX 
+provider's network (due to the HPLMN outsourcing the Authoritative DNS Server). 
+
+
+GRX/IPX NetworkVPLMNSGSNLocal Caching 
+DNS ServerVPLMN or HPLMNRoot DNS 
+ServerAuthoritative 
+DNS ServerGGSN124PDP Context establishment procedure356 
+
+
+Figure 5: DNS message flow for PDP Context activations 
+1. Upon receiving a "PDP Context Activation" message from the MS, the SGSN checks the 
+APN (if one was provided) against the user subscription record it previously obtained 
+from the HLR when the MS attached, and then sends a recursive DNS Query to the DNS 
+Local Caching DNS server. 
+2. The Local Caching DNS Server checks its local cache for the IP address of the 
+requested FQDN. If it has this, processing skips to step 6. Otherwise, the Local Caching 
+DNS Server checks its local cache for the IP address of the Authoritative DNS Server. If 
+it does not already have this IP address, it then issues an iterative DNS Query to the 
+Root DNS Server otherwise, processing skips to step 4. 
+3. The Root DNS Server replies to the DNS Query received from the Local Caching DNS 
+with the details of the Authoritative DNS Server (for example, the FQDN and/or IP 
+address(es). 
+4. The Local Caching DNS Server sends an iterative DNS Query to the Authoritative DNS 
+Server (which will reside in the VPLMN, for vGGSN connection, and will reside in the 
+HPLMN for hGGSN connection). 
+5. The Authoritative DNS Server replies to DNS Query received from the Local Caching 
+DNS Server with the IP address of the GGSN. 
+6. The Local Caching DNS Server replies to the DNS Query received from the SGSN (in 
+step 1) with the result obtained from the Authoritative DNS Server. The SGSN then 
+commences GTP tunnel establishment and, all being well, data flow starts. 
+
+
+
+New VPLMN or HPLMNNew 
+SGSNLocal Caching 
+DNS ServerOld VPLMN or HPLMNRoot DNS 
+ServerAuthoritative 
+DNS ServerOld SGSNGRX/IPX Network124PDP Context handover procedure356
+As can be seen in the above steps, there are less DNS queries for a subscriber using a 
+GGSN in the VPLMN as the Root DNS Server is not interrogated. 
+
+Note also that the Local Caching DNS Server could also be the Authoritative DNS Server for 
+the requested FQDN, in which case a final result can be given immediately to the SGSN. 
+
+4.2.3 Inter-SGSN handovers for active PDP Contexts 
+
+When an MS has one or more PDP Contexts activated and moves to a new Routing Area 
+that is serviced by a new SGSN, the new SGSN needs to connect to the old SGSN in order 
+to download the PDP Context information and any data that is still to be delivered to the MS. 
+It can do this by either using a mapping table which has SGSN addresses against a finite set 
+of Routing Areas, or it can translate the old Routing Area Code (as received from the MS) 
+into a FQDN upon which to resolve to an IP address using DNS. 
+
+The former method is most commonly used for intra-PLMN SGSN handovers, and the latter 
+is used for inter-PLMN SGSN handovers. However, both methods can be used for both 
+types of handovers. 
+
+The latter of the two aforementioned methods is depicted below for inter- and intra-PLMN 
+SGSN handovers. The FQDN created by the SGSN depends upon whether the SGSN 
+handover is a Routing Area Update, Routing Area Update in a network which has Intra 
+Domain Connection of RAN Nodes to Multiple CN Nodes or is an SRNS Relocation (see 
+3GPP TS 23.060 [23], section 6.9, for more information). 
+
+ 
+
+Figure 6: DNS message flow for PDP Context handovers between SGSNs 
+
+
+
+7. The new SGSN creates an FQDN using the old Routing Area Code (and the Network 
+Resource Identifier, if available) or the old RNC ID and then issues a recursive DNS 
+Query to the DNS server address configured in the SGSN (Local Caching DNS server). 
+8. The Local Caching DNS Server checks its local cache for the IP address of the 
+requested FQDN. If it has this, processing skips to step 6. Otherwise, the Local Caching 
+DNS Server checks its local cache for the IP address of the Authoritative DNS Server. If 
+it does not already have this IP address, it then issues an iterative DNS Query to the 
+Root DNS Server, otherwise, processing skips to step 4. 
+9. The Root DNS Server replies to the DNS Query received from the Local Caching DNS 
+with the details of the Authoritative DNS Server (for example, the FQDN and/or IP 
+address(es)). 
+10. The Local Caching DNS Server sends an iterative DNS Query to the Authoritative DNS 
+Server (which will reside in the VPLMN, for inter-PLMN handover, and will reside in the 
+HPLMN for intra-PLMN handover). 
+11. The Authoritative DNS Server replies to DNS Query received from the Local Caching 
+DNS Server with the IP address of the old SGSN. 
+12. The Local Caching DNS Server replies to the DNS Query received from the SGSN (in 
+step 1) with the result obtained from the Authoritative DNS Server. The New SGSN then 
+commences handover with the Old SGSN. 
+
+
+As can be seen in the above steps, there are less DNS queries for an intra-PLMN SGSN 
+handover as the Root DNS Server is not interrogated. 
+
+Note also that the Local Caching DNS Server could also be the Authoritative DNS Server for 
+the requested FQDN, in which case a final result can be given immediately to the New 
+SGSN. 
+
+4.3 Multi-media Messaging Service (MMS) 
+
+4.3.1 Introduction 
+
+MMS inter-working is where a subscriber of one operator has the ability to send and receive 
+Multimedia Messages (MMs) to and from a subscriber of another operator. Unlike SMS inter-
+working, the MM is always sent to the user via his ÅghomeÅh service centre. This means that in 
+all MMS inter-working scenarios, the MM is always transferred from the source operatorÅfs 
+MMSC to the destination operatorÅfs MMSC. Thus, MMS interworking requires use of a 
+standardised inter-MMSC protocol. This protocol is defined as SMTP (defined in IETF RFC 
+2821[13]) as profiled in the MMS specification 3GPP TS 23.140 [15]. 
+
+DNS is used in MMS in order for the source MMSC to resolve the destination MMSC/SMTP 
+server. DNS MX Resource Records, as defined in IETF RFC 1035 [2], are required for 
+SMTP based Multimedia Message routeing and relaying. It should be noted that GSMA PRD 
+IR.34 [12] recommends that the ".gprs" TLD should be used when utilising the GRX/IPX 
+network as the interworking network between MMSCs. This format of FQDN, including 
+allowed sub-domains, is defined in section Error! Reference source not found. of the 
+present document. 
+
+
+GRX/IPX NetworkOperator AMMSCLocal Caching 
+DNS ServerOperator BRoot DNS 
+ServerAuthoritative 
+DNS ServerMMSC124SMTP Message Transfer procedure356
+The selection of a DNS tree/hierarchy to use (e.g. Internet or GRX/IPX) ultimately depends 
+on the interconnection network used. The interconnection network used can in turn depend 
+on where the MM is to be sent e.g. Internet for when delivering to an e-mail user, GRX/IPX 
+network for when delivering to another MMS subscriber. Thus, the resolution process may 
+differ depending on whether the MM is addressed to an MSISDN/E.164 number or to an 
+NAI/e-mail address. 
+
+There are also different commercial models for MMS inter-working between Operators. 
+These are essentially the "Direct Interconnect" model, where MMs are sent from Operator A 
+to Operator B directly, and the "Indirect Interconnect Model", where MMs are sent from 
+Operator A to an MMS Hub (and the MMS Hub then takes care of delivering the MM to 
+Operator B). 
+
+More information on MMS interworking can be found in GSMA PRD IR.52 [9]. 
+
+4.3.2 MM delivery based on MSISDN for the Direct Interconnect model 
+
+The following figure and associated numbered steps describe the direct interconnect only 
+scenario for MMS inter-working of MMs addressed to an MSISDN/E.164 number: 
+
+ 
+
+Figure 7: MMS Direct Inter-network Delivery 
+1. Upon receiving a Multimedia Message (MM) from the MS, the MMSC converts the 
+destination MSISDN to an MMS FQDN (commonly of the form 
+"mms.mnc<MNC>.mcc<MCC>.gprs") by using one of the following methods: 
+
+
+
+. An HLR look-up using e.g. the MAP_SRI_For_SM operation. This returns the IMSI, of 
+which the MNC and MCC are extracted to create the MMS FQDN. 
+. An ENUM look-up (see section Error! Reference source not found. for more 
+details). 
+
+
+The MMSC then sends a recursive DNS query for the derived FQDN to the Local 
+Caching DNS Server. 
+
+2. The Local Caching DNS Server checks its local cache for the IP address of the 
+requested FQDN. If it has this, processing skips to step 6. Otherwise, the Local Caching 
+DNS Server checks its local cache for the IP address of the Authoritative DNS Server. If 
+it does not already have this IP address, it then issues an iterative DNS Query to the 
+Root DNS Server, otherwise processing skips to step 4. 
+3. The Root DNS Server replies to the DNS Query received from the Local Caching DNS 
+Server with the details of the Authoritative DNS Server (for example, the FQDN and/or IP 
+address(es)). 
+4. The Local Caching DNS Server sends an iterative DNS Query to the Authoritative DNS 
+Server. 
+5. The Authoritative DNS Server replies to the DNS Query received from the Local Caching 
+DNS Server with the IP address of the MMSC, or, a list of FQDNs and/or IP addresses if 
+the query was for an MX record. 
+6. The Local Caching DNS Server replies to the DNS Query received from the MMSC (in 
+step 1) with the result obtained from the Authoritative DNS Server. The MMSC then 
+commences an SMTP session with Operator B's MMSC to transfer the MM. 
+
+
+Note that the Local Caching DNS Server could also be the Authoritative DNS Server for the 
+requested FQDN, in which case a final result can be given immediately to the MMSC. 
+
+4.3.3 MM delivery based on MSISDN for the Indirect Interconnect model 
+
+The following figure and associated numbered steps describe the MMS hub model of 
+interconnect for MMS inter-working of MMs addressed to an MSISDN/E.164 number: 
+
+
+ Operator AMMSCLocal Caching 
+DNS ServerOperator B or 
+GRX/IPX NetworkAuthoritative 
+DNS ServerMMSC or 
+MMS Hub 112SMTP Message Transfer procedure34
+
+Figure 8: MMS Inter-operator Delivery 
+1. Upon receiving a Multimedia Message (MM) from the MS, the MMSC converts the 
+destination MSISDN to an MMS FQDN (commonly of the form 
+"mms.mnc<MNC>.mcc<MCC>.gprs") by using one of the following methods: 
+. An HLR look-up using e.g. the MAP_SRI_For_SM operation. This returns the 
+IMSI, of which the MNC and MCC are extracted to create the MMS FQDN. 
+. An ENUM look-up (see section Error! Reference source not found. for more 
+details). 
+
+
+
+
+
+
+The MMSC then sends a recursive DNS query for the derived FQDN to the Local 
+Caching DNS Server. 
+
+2. The Local Caching DNS Server checks its local cache for the IP address of the 
+requested FQDN. If it has this, processing skips to step 4. Otherwise, the Local Caching 
+DNS Server checks its local cache for the IP address of the Authoritative DNS Server. In 
+this model, the Authoritative DNS Server is always known. 
+3. The Authoritative DNS Server replies to the DNS Query received from the Local Caching 
+DNS Server with either the IP address of the MMS Hub to use or the destination MMSC, 
+or, a list of FQDNs and/or IP addresses if the query was for an MX record. 
+4. The Local Caching DNS Server replies to the DNS Query received from the MMSC (in 
+step 1) with the result obtained from the Authoritative DNS Server. The MMSC then 
+commences an SMTP session either with Operator B's MMSC, or, to an identified MMS 
+Hub, to transfer the MM. 
+
+
+Note that there is more flexibility in the MMS Hub architecture than shown above, depending 
+on the MMS Hub provider used e.g. some Hub providers offer MSISDN/E.164 number 
+
+
+conversion/resolving, some offer complete hosting of the MMSC, and so on. See GSMA 
+PRD IR.52 [9] for more information on MM delivery using an MMS Hub, including a more full 
+description of the flexibility available in the architecture. 
+
+Note also that the Local Caching DNS Server could also be the Authoritative DNS Server for 
+the requested FQDN, in which case a final result can be given immediately to the MMSC. 
+
+4.3.4 MM delivery based on NAI/e-mail address 
+
+For MMs addressed to an NAI/e-mail address (as defined in IETF RFC 2822 [15]), the 
+message flow is the same as in Error! Reference source not found. except that the 
+Internet's root DNS servers and authoritative DNS servers are used, possibly with the use of 
+referral DNS servers too. 
+
+4.4 WLAN Inter-working 
+
+4.4.1 Introduction 
+
+Error! Reference source not found. shows how local login and roaming login differ; it also 
+demonstrates how Roaming Partners actually connect to each other via inter-operator 
+network. Case 1 is an example of normal local login in the hot spot of Visited PLMN, where 
+the user inserts his username & password and is authenticated in the Visited PLMN. In this 
+case, the RADIUS Roaming Network is not utilised. 
+
+Case 2 in Error! Reference source not found. refers to a roaming login, where the user 
+inserts his username (with realm) and password in the hot spot of the Visited PLMN and 
+authentication and request is sent by way of a proxy to Home PLMN. The User is then 
+authenticated in the Home PLMN. Necessary RADIUS messages are transferred between 
+RADIUS Roaming Proxies using the IP based Inter-PLMN network, that is, the GRX/IPX. 
+
+Error! Reference source not found. shows also in principle the difference between the 
+following two authentication methods: 
+
+. Web Based Authentication 
+. SIM Based Authentication 
+
+
+Web Based (that is, using username/password) authentication is considered as an existing 
+first phase solution for the WLAN authentication. However, in the future there will be a target 
+solution utilising EAP solutions, where the Home PLMN HLR is involved. 
+
+
+ 
+
+Figure 9: WLAN user authentication mechanism 
+
+
+The GRX/IPX network is used for transporting RADIUS authentication and accounting 
+messages for WLAN roaming services only, WLAN user data is not carried over GRX/IPX. 
+
+The IP address of the WLAN Roaming Proxy must be reachable via the GRX/IPX. Please 
+note that the first phase of WLAN roaming will not use the GRX/IPX Root DNS at all since 
+the IP addresses of the Home PLMN RADIUS server is statically configured in the Visited 
+PLMNs RADIUS server (the "next hop" list). In fact, RADIUS does not provide for a DNS 
+type solution for realm to AAA entity mapping. The utilising of Root DNS may be required in 
+future WLAN roaming solutions where Diameter instead of RADIUS is used, as Diameter 
+does provide for an optional realm to AAA entity mapping. 
+
+More information on WLAN roaming can be found in GSMA PRD IR.61 [10]. 
+
+4.5 IP Multi-media core network Sub-system (IMS) 
+
+4.5.1 Introduction 
+
+The IP Multi-media core network Sub-system (IMS) provides a standardised architecture for 
+providing feature rich, multimedia services/applications, such as speech communication, 
+real-time and turn-based gaming, shared online whiteboards etc. IMS services/applications 
+rely on sessions managed by the Session Initiation Protocol (SIP), as defined in IETF RFC 
+3261 [38], and profiled in 3GPP TS 24.229 [35] (which includes a set of standardised 
+extensions) for use by Service Providers. 
+
+
+Diameter is also used on some interfaces in the IMS architecture, however, these are 
+intra-Service Provider interfaces and so are outside the scope of this PRD. 
+
+Error! Reference source not found. shows an end-to-end IMS session. Only the basic 
+architecture of involved IMS network elements is shown. Please note that signalling and user 
+data of an IMS session are separated. Signalling and user data make use of different PDP 
+contexts, but use the same (originating) IP address. 
+
+ 
+Inter-NetworkIM BackboneHome NetworkIM SubsystemUEGGSNSGSNP-CSCFS-CSCFI-CSCFHome Network ABGHome NetworkIM SubsystemUEGGSNSGSNP-CSCFS-CSCFI-CSCFHome Network BBGGiMmMmGiInter-NetworkIM BackboneHome NetworkIM SubsystemUEGGSNSGSNP-CSCFS-CSCFI-CSCFHome Network ABGHome NetworkIM SubsystemUEGGSNSGSNP-CSCFS-CSCFI-CSCFHome Network BBGInter-NetworkIM BackboneInter-PLMNIP BackboneHome NetworkIM SubsystemHome NetworkIM SubsystemUEGGSNGGSNSGSNSGSNP-CSCFP-CSCFS-CSCFS-CSCFI-CSCFI-CSCFHome Network ABGBGHome NetworkIM SubsystemUEGGSNSGSNP-CSCFS-CSCFI-CSCFHome Network BBGHome NetworkIM SubsystemHome NetworkIM SubsystemUEGGSNGGSNSGSNSGSNP-CSCFP-CSCFS-CSCFS-CSCFI-CSCFI-CSCFHome Network BBGBGGiMmMmGi
+
+Figure 10: IMS Session Inter-working 
+
+
+IMS subscribers are addressed by SIP URIs or E.164 numbers represented as Tel URIs or 
+SIP URIs with the "user=phone" option. ENUM is specified in IMS as the means to convert 
+an E.164 number into a SIP URI. See section Error! Reference source not found. for more 
+information on ENUM. 
+
+For resolving SIP URIs to SIP Servers (see IETF RFC 3263 [17]), support of the NAPTR 
+Resource Record functionality (as defined in IETF RFC 3404 [6]) and SRV Resource Record 
+functionality (as defined in IETF RFC 2782 [18]) is needed in a Service Provider's DNS 
+servers. 
+
+More information on IMS roaming and interworking can be found in GSMA PRD IR.65 [11]. 
+
+4.5.2 SIP server configuration 
+
+There are several RFCs covering use of SIP in the DNS. These include IETF RFC 3824 
+[24], IETF RFC 3263 [17], and IETF RFC 3403 [6]. 
+
+The reason this configuration is needed is as follows: 
+
+When a SIP session is initiated by a user, they address the session to either a SIP URI (e.g. 
+kim@example.com) or an E.164 number. In both cases, the IMS needs to know the IP 
+address of the SIP server to which it can route the session. The SIP server information 
+contains the detail needed to provide the destination network's SIP server IP address to the 
+calling network based on the information in the SIP URI. 
+
+
+The approach described in this section is compliant with these RFCs and consists of 4 
+separate steps. It is consequently known as the Åg4-step approachÅh. 
+
+In order to improve performance/session establishment time, use of explicit IP addresses 
+instead of FQDNs eliminates the need for some DNS lookups and retains compatibility with 
+existing standards. However, using IP addresses instead of FQDNs is more restrictive. 
+
+4.5.2.1 Step 1 
+
+This is the ENUM related step and is performed only for cases where the service has been 
+addressed to an E.164 number. An IMS call to a user using the format bob@example.com 
+would not require this step. Example of DNS data for a particular SIP URI and its servers 
+can be found in section Error! Reference source not found. 
+
+4.5.2.2 Step 2 
+
+Having obtained the destination domain name the DNS is asked to provide matching SIP 
+Server Location Information. One or more NAPTR records may be retrieved and the calling 
+application examines these records to find the best match based on priorities and the 
+desired SIP protocol variant: 
+
+mnc001.mcc234.3gppnetwork.org. IN NAPTR 50 100 "s" "SIP+D2U" "" _sip._udp.example.com. 
+
+mnc001.mcc234.3gppnetwork.org. IN NAPTR 90 100 "s" "SIP+D2T" "" _sip._tcp.example.com. 
+
+mnc001.mcc234.3gppnetwork.org. IN NAPTR 90 100 "s" "SIPS+D2T" "" _sips._tcp.example.com. 
+
+ 
+
+In the above example, ÅgD2UÅh indicates UDP-based SIP, ÅgD2TÅh indicates TCP-based SIP, 
+and ÅgSIPS+D2TÅh indicates UDP-based unencrypted SIP. 
+
+The presence of these fields indicates what variations of SIP are supported on a given SIP 
+server. 
+
+The "s" flag means the next stage is to look up an "SRV" record 
+
+4.5.2.3 Step 3 
+
+An example set of SIP server SRV records is as follows: 
+
+_sip._tcp.example.com. SRV 0 1 5060 sipserv1.example.com. 
+
+_sip._tcp.example.com. SRV 0 2 5060 sipserv2.example.com. 
+
+_sip._udp.example.com. SRV 0 1 5060 sipserv1.example.com. 
+
+_sip._udp.example.com. SRV 0 2 5060 sipserv2.example.com. 
+
+_sips._tcp.example.com. SRV 0 1 5060 sipserv3.example.com. 
+
+_sips._tcp.example.com. SRV 0 2 5060 sipserv4.example.com. 
+
+ 
+
+For each of the variations of the SIP protocols supported the SRV records describe: 
+
+. name of the server; 
+. which port number SIP uses; and 
+. where there are multiple servers, the weights & priorities to allow rough load balancing. 
+
+
+The calling network asks the DNS for a SRV record for the host corresponding to the specific 
+service/protocol/domain combination that was returned in Step 2 
+
+
+If there are multiple records with the same service/protocol/domain combination, the caller 
+must sort the records based on which has the lowest priority. If there is more than one 
+record with the same priority, the record with the highest weight is chosen. 
+
+From the SRV record get the corresponding server name. 
+
+There is potential flexibility in this step for the destination operator to receive the SIP traffic 
+on different servers depending on the desired variation of the SIP protocol . TCP, UDP, 
+encrypted, unencrypted. 
+
+4.5.2.4 Step 4 
+
+For the server name returned in Step 3, do a standard DNS lookup to finds its IP address 
+
+This is a normal "A" (address) record lookup 
+
+sipserv1.example.com. IN A 101.1.2.3 
+
+sipserv2.example.com. IN A 101.1.2.4 
+
+4.5.3 Domain Names used 
+
+The domain names used for IMS based services are SIP Server names, however, there are 
+no restrictions in the standards as to what these domain names shall be (other than the 
+normal FQDN rules, as specified in the likes of IETF RFC 1034 [1] and IETF RFC 1035 [2]). 
+However, for service providers interconnecting across the GRX/IPX network, it is 
+recommended to use an MCC/MNC sub domain of ".3gppnetwork.org" as this is supported 
+already on the GRX/IPX DNS and also allows for SIP URIs returned using ENUM on the 
+GRX/IPX as specified in section Error! Reference source not found.. 
+
+It should be noted that right now, more "user friendly" domain names are not yet directly 
+supported on the GRX/IPX DNS. Work on supporting a much wider set of domain names is 
+ongoing. 
+
+4.6 Generic Authentication Architecture (GAA) 
+
+4.6.1 Introduction 
+
+The Generic Authentication Architecture is defined in 3GPP TS 33.220 [19]. It is a 
+standardised mechanism for securely distributing shared keys for later use by applications 
+on the UE. 
+
+NOTE: The address of the Bootstrapping Server Function (BSF) used by the UE is 
+dependent on whether USIM or ISIM is used in bootstrapping. See 3GPP TS 
+23.003 [8], section 16. 
+
+4.7 Generic Access Network (GAN) 
+
+4.7.1 Introduction 
+
+The Generic Access Network is defined in 3GPP TS 43.318 [20] and 3GPP TS 44.318 [21]. 
+It provides for using unlicensed radio spectrum for accessing the GSM core network in order 
+to provide normal GSM services including both CS and PS. It was based on the work done 
+by the UMA forum. 
+
+
+4.8 Secure User Plane Location (SUPL) 
+
+4.8.1 Introduction 
+
+The Secure User Plane Location feature is defined in OMA 
+OMA-AD-SUPL-V1_0-20070615-A [27]. It provides a mechanism for carrying location 
+information between a user's SUPL Enabled Terminal (SET) and SUPL Location Platform 
+(SLP) in a Service Provider's network, in a way that does not rely on modifications to any 
+network interfaces or elements between the SET and SPL. This information can then be 
+used by the Service Provider to calculate the SET's location. 
+
+4.9 Enhanced Packet Core (EPC) 
+
+4.9.1 Introduction 
+
+The Enhanced Packet Core is defined in 3GPP TS 23.401 [28] and 3GPP TS 23.402 [29]. It 
+provides for a new and much more efficient PS core network to support E-UTRAN and 
+serves as part of the Enhanced Packet System (EPS). 
+
+It should be noted that EPC used to be known as SAE (Service Architecture Evolution) and 
+E-UTRAN used to be known as LTE (Long Term Evolution) RAN. 
+
+4.10 IMS Centralised Services (ICS) 
+
+4.10.1 Introduction 
+
+The IMS Centralised Services feature is defined in 3GPP TS 23.292 [30]. It enables the 
+provisioning of Supplementary Services and value added services (such as those offered 
+today via CAMEL) to the CS domain from IMS. 
+
+4.11 Access Network Discovery Support Function (ANDSF) 
+
+4.11.1 Introduction 
+
+The Access Network Discovery Support Function (ANDSF) is defined in 3GPP TS 23.402 
+[29]. It contains data management and control functionality necessary to provide network 
+discovery and selection assistance data according to Service Provider policy. The ANDSF 
+responds to requests from the UE for access network discovery information and may be able 
+to initiate data transfer to the UE, based on network triggers. 
+
+4.12 Mobile Broadcast Services (BCAST) 
+
+4.12.1 Introduction 
+
+Mobile Broadcast Services is a service enabler defined by the OMA in 
+OMA-TS-BCAST_Service_Guide-V1_1-20100111-D [40]. This enables service/content 
+providers to describe the services and content available (either free, subscription or one-off 
+fee) and how to access them as Mobile Broadcast services either over a Broadcast Channel 
+or over an Interaction Channel. From the user perspective the Service Guide can be seen as 
+an entry point to discover the currently available or scheduled services and content, and to 
+filter those based on their preferences. 
+
+
+Discovery of a Service Guide Function is performed using DNS SRV records, or optionally, 
+using an FQDN derived from the IMSI, as specified in section 6.2.1 of 
+OMA-TS-BCAST_Service_Guide-V1_1-20100111-D [40]. The domain name to use when 
+deriving the FQDN from the IMSI is specified in section Error! Reference source not 
+found. of the present document. 
+
+4.13 The XCAP Root URI on Ut Interface for MMTEL/IMS profile for Voice and 
+SMS (XCAP) 
+
+4.13.1 Introduction 
+
+XCAP is a protocol defined in IETF RFC 4825 [44], 3GPP TS 24.623 [45], and is part of the 
+IMS profile for Voice and SMS documented in IR.92 [46]. This is used in manipulation of 
+supplementary service configuration. 
+
+The XCAP Root URI is defined in IETF RFC 4825 [44], and is used to identify the XCAP 
+Root, which is a context that contains all the documents across all application usages and 
+users that are managed by the XCAP server. 
+
+The XCAP Root URI takes the following format: 
+
+"http://xcap.domain" 
+
+The domain part of the XCAP Root URI is derived in accordance with 3GPP TS 23.003 [8], 
+section 13.9. 
+
+4.14 RCS - Rich Communication Suite 
+
+4.14.1 4.14.1 Introduction 
+
+RCS/RCS-e as specified in the RCS/RCS-e specifications [48] is a simple and interoperable 
+evolution to voice and text, which enables customers to send instant messages, video chat 
+and exchange files in real time, that is rich call with content sharing, chat, file sharing etc. All 
+functions are built into the address book of mobile devices. RCS/RCS-e focuses on the 
+communications service aspects building on established interoperability principles within the 
+mobile operator ecosystem providing service definition, functional description and technical 
+realisation to develop new service packages for today's 'always-on' mobile users enabling 
+seamless user experience. 
+
+The description and the use of the reserved subdomain names will be referenced in the 
+RCS/RCS-e specifications where this domain can be used by all RCS/RCS-e specification 
+versions. 
+
+4.15 Evolved Packet Data Gateway (ePDG) 
+
+4.15.1 Introduction 
+
+The Evolved Packet Data Gateway is defined in 3GPP TS 23.402 [29]. It provides PDN 
+connectivity to the Evolved Packet Core (EPC) over untrusted non-3GPP IP access 
+networks. 
+
+
+4.16 Network element self-configuration 
+
+4.16.1 Introduction 
+
+The concept of network element self-configuration is described in 3GPP TS 32.501 [50]. The 
+network elements self-configuration can be applied e.g. for eNBs that is defined in 3GPP TS 
+36.300 [51]. 
+
+4.17 EPC and GPRS coexistence 
+
+4.17.1 Introduction 
+
+When configuring the authoritative DNS server, a mobile operator supporting both GPRS 
+and EPC roaming must consider that different DNS query procedures can be used in GPRS 
+(A/AAAA-record queries) compared with EPC (S-NAPTR queries). 
+
+GSMA PRD IR.88 [52] provides further details on the DNS configuration requirements for 
+different GPRS (2G/3G) and EPC coexistence scenarios. 
+
+4.18 MBMS Service Announcement Bootstrapping 
+
+4.18.1 Introduction 
+
+The method for bootstrapping for MBMS service announcement is described in 3GPP TS 
+26.346 [53] 
+
+5 E.164 Number Translation 
+
+5.1 Introduction 
+
+Telephone numbers compliant with E.164 that identify subscribers cannot be used on their 
+own for addressing in IP based networks. The Internet Engineering Task Force have defined 
+a mechanism for converting E.164 numbers to an "IP friendly" address relevant to the 
+service that the user wishes to use. IETF RFC 3761 [3] defines the mapping of E.164 
+numbers to services using DNS. This mechanism is known as ENUM. 
+
+ENUM only provides for E.164 numbers (as defined in ITU-T Recommendation E.164 [37]), 
+that is, telephone numbers in their full/international format of CC+NDC+SN. If a given dialled 
+number is not in the E.164 number format for example national format, it needs to be 
+converted to this format first. If a given dialled number is a short code or some other type of 
+Service Provider address, it will need to be mapped to an E.164 number, or else, be 
+resolved by a defined reverse lookup function to an E.164 number. 
+
+There are two types of ENUM: Public ENUM and Private ENUM. There are a number of 
+different terms used in the Telecommunications industry to refer to private ENUM. For 
+example: ÅgCarrier ENUMÅh, ÅgInfrastructure ENUMÅh and "Operator ENUM". This document 
+uses the term ÅgCarrier ENUMÅh. 
+
+Public ENUM has the following characteristics: 
+
+. Uses the public internet DNS infrastructure. 
+
+
+
+. End User data is exposed to the Ågpublic" and can be read by anyone. 
+. Uses the Åge164.arpaÅh top level domain. 
+. Intention is to provide an on-line end user opt in service and application directory. 
+. Data populated by end users who choose to opt-in and populate their data. 
+. Data required to be managed by end user and could be out of date because it is up to 
+the end user to keep it up to date. 
+. May contain ÅgpersonalÅh data if the user desires. There are privacy concerns but placing 
+this data in ENUM is according to user choice. 
+
+
+Carrier ENUM has the following characteristics: 
+
+. Uses a private DNS infrastructure 
+. Provides a private routeing enabling technology that is transparent to the end user. 
+. Cannot be directly accessed by end users or public Internet users as data is contained 
+within a secure end-to-end network. 
+. Uses a different top level domain to avoid any detrimental effects caused by unintended 
+leakage to the Internet caused by mis-configuration in a Service ProviderÅfs network. 
+. Data can be only be exchanged by those connected to the private routing infrastructure. 
+. Data populated by Service Providers who are the telephone number assignee or their 
+designated Agents. 
+. Data must follow DNS caching and Time To Live requirements so as to avoid 
+call/session failure. 
+. Contains only data required for call/session routing or network discovery to the 
+destination Service Provider. 
+
+
+Public ENUM cannot be used on the GRX/IPX network, as it is too insecure, incomplete, 
+non-private and has no guaranteed QoS or integrity of data. Therefore, Carrier ENUM 
+should be used on the GRX/IPX network. The following sub-sections describe how Carrier 
+ENUM is implemented in the GRX/IPX network for inter-Service Provider services (referred 
+to hereafter as "Carrier ENUM on the GRX/IPX"). 
+
+5.2 General Requirements 
+
+Carrier ENUM on the GRX/IPX is designed to provide the following high-level requirements: 
+
+. A competitive environment, where more than one vendor or service bureau can offer 
+ENUM functionality. 
+. Equal accessibility, such that the ENUM data fill is available to all entities that need it but 
+also restricted to those that do not in a way that does not disadvantage them. 
+. Accuracy in the data populated, in that existing authoritative databases with the required 
+information are accessible to query. 
+. Support for the establishment of permissions and/or reciprocal business policy 
+agreements between Service Providers to determine routing and priorities for managing 
+differing types of network traffic requesting access into a terminating Service Provider's 
+network along with the need to identify the querying party. 
+
+
+More lower-level/detailed requirements are contained within relevant sub-sections of section 
+5, below. 
+
+
+5.3 Architecture 
+
+5.3.1 Introduction 
+
+The following details the GSMA recommended structure and delegation model of Carrier 
+ENUM on the GRX/IPX network. An alternative model is described in Error! Reference 
+source not found., for Service Providers who want to provide their own ENUM solution. 
+Analysis on the appropriateness and viability of each model (including how they can both 
+co-exist) is provided in IN.12 [31]. 
+
+In the following architecture model, a hierarchy of ownership is defined. DNS is designed to 
+have a hierarchical structure allowing control of different parts of the overall structure to be 
+established by business policy and data access requirements of the destination network 
+whilst supporting standard DNS tiers. E.164 numbers also have a hierarchical structure and 
+this can be mapped onto the DNS structure on the GRX/IPX network. 
+
+5.3.2 Data Delegation Structure 
+
+To ensure proper distribution and scalability of the DNS structures, ENUM was originally 
+designed to use a strict tiered system, consisting of 3 tiers as follows: 
+
+. Tier 0 . Global level 
+. Authoritative for the ENUM top level domain. 
+. Under this domain are pointers to the Tier 1 authoritative servers. 
+
+
+
+
+. Tier 1 . Country Code level (CC) 
+. Authoritative for ITU-T assigned E.164 country codes. 
+. Under this domain are pointers to the Tier 2 authoritative servers. 
+
+
+
+
+. Tier 2 . Service Provider level (NDC) 
+. Authoritative for National Destination Codes and individual Subscriber 
+Numbers. 
+. Under this domain are the individual Subscriber Numbers each with one or 
+more (Naming Authority Pointer) NAPTR records associated with them. 
+
+
+
+
+
+
+This is depicted as follows, where the arrows show delegation: 
+
+
+ENUMTier 1ENUMTier 2ENUMTier 2ENUMTier 1ENUMTier 2ENUMTier 2ENUMeTier0ENUMTier 1ENUMTier 2ENUMTier 2ENUMTier 1ENUMTier 2ENUMTier 2A) Tier 1 and Tier 2on individual serversB) Tier 1 hosted by ÅgTier 0Åhserver,
+Tier 2 on individual serversC) Tier 1 and Tier2 for all SPshosted on one common serverD) Tier 1 and Tier2 for one ore moreSPshosted on one common server, 
+other SPshave individual Tier 2 serversCountry ACountry BCountry CCountry D 
+
+
+Figure 11: ENUM logical hierarchy 
+
+
+The ENUM hierarchy described above is logical, and does not require that each logical 
+ENUM Tier is mapped to individual ENUM servers. The logical architecture allows for a large 
+flexibility when it comes co-locating different tiers of the ENUM hierarchy onto ENUM 
+servers. Figure 11a gives some examples of possible co-location of the logical Tiers onto 
+physical ENUM servers. 
+
+ 
+
+Figure 12: Examples of co-location of the ENUM Logical Tiers to ENUM servers 
+
+
+Figure 11a provides only a set of examples on how the logical Tiers can be mapped onto 
+ENUM servers, and does not preclude other configurations such as co-locating both Tier 1 
+and Tier 2 for a country on the Tier 0 server or the possibilities to support further Tiers below 
+Tier 2 if needed. The possibility to support several Logical Tiers for different countries on one 
+ENUM server is also possible allowing a Service provider with operations in several 
+countries to co-locate the logical Tier2 for all or several of those countries on a common 
+multi-country Tier 2 ENUM server. 
+
+
+GRX/IPXRoot DNSServerENUM RootServerPrivateENUM DBPrivateENUM DBPrivateENUM DBDelegation 
+DelegationDelegationFirst LevelENUMDelegated 
+DatabasesSecond LevelENUMDelegated 
+DatabasesDelegation
+In countries where Service Provider Number Portability is employed, this flexibility of the 
+ENUM server and Tier structure allows each individual country to agree on different types of 
+arrangements of the ENUM structure suiting the situation and requirements of that specific 
+country. 
+
+Therefore, Carrier ENUM on the GRX/IPX builds upon this tiered structure, including the 
+flexibility to allow diverse national level, and Service Provider level, implementation 
+strategies. The following diagram depicts the overall logical architecture for Carrier ENUM on 
+the GRX/IPX. 
+
+Figure 13: Logical architecture for Carrier ENUM on the GRX/IPX 
+
+
+NOTE 1: Represented in the above figure are logical entities and thus one or more 
+instances of those logical entities can be offered by one physical server. 
+
+NOTE 2: The GRX/IPX Root DNS Server delegates the agreed Carrier ENUM on the 
+GRX/IPX top level domain name, as detailed in section Error! Reference 
+source not found., to the ENUM Root Server. The ENUM Root Server and 
+all Private ENUM databases located directly or in-directly below are 
+
+
+delegated different parts of the E.164 number (which commonly, although 
+not always, align to the CC, NDC and SN). 
+
+In practice there are many considerations relating to DNS delegation. Who maintains data 
+integrity and has control of particular ENUM databases and E.164 number ranges is a matter 
+of concern to Service Providers, especially in countries where numbers are portable 
+between mobile and fixed operators and there are potentially a large number of 
+organisations involved. In the Ågreal worldÅh the delegation structure may not follow the model 
+shown above and different Tiers may share the same server and delegation model. 
+
+Commercial arrangements for DNS/ENUM delegation, control and administration; are not 
+described in this document. The scope is restricted to describing only technical details. 
+
+5.3.3 Resolution procedure 
+
+A given E.164 number is converted to a FQDN using the procedure described in IETF RFC 
+3761 [3]. The resultant FQDN used in Carrier ENUM on the GRX/IPX slightly differs from 
+that defined in IETF RFC 3761 [3] though, and is defined below in section Error! Reference 
+source not found.. 
+
+GRX/IPX Carrier ENUM utilises the GRX/IPX DNS structure, as defined in section Error! 
+Reference source not found.. Therefore, a Slave GRX/IPX Root DNS Server is queried 
+first, then the ENUM Root Server, and then one or more Private ENUM Database servers, 
+until a final result is obtained. 
+
+The following depicts an example successful ENUM resolution using Carrier ENUM on the 
+GRX/IPX: 
+
+
+ 
+
+Figure 14: Example ENUM resolution for an IMS session establishment 
+
+
+The numbers in the messages in the above diagram refer to the below: 
+
+1. Originating Service Provider's Local Caching DNS Server sends the DNS query to the 
+GRX/IPX Root DNS Server. 
+2. GRX/IPX Root DNS Server replies with a referral to the ENUM Root Server. 
+3. Originating Service Provider re-sends the DNS query, but to the ENUM Root Server. 
+4. ENUM Root Server replies with a referral to the First Level ENUM Delegated Database 
+Server. 
+5. Originating Service Provider re-sends the DNS query to the First Level ENUM Delegated 
+Database Server. 
+6. First Level ENUM Delegated Database Server replies with either a referral to a Second 
+Level ENUM Delegated Database Server, or a final result. 
+7. If a referral was received, then Originating Service Provider re-sends the DNS query to 
+the Second Level ENUM Delegated Database Server. 
+8. Second Level ENUM Delegated Database Server replies with a final result. 
+
+
+NOTE 1: As per normal DNS procedures, each reply a Service Provider receives is 
+cached for a certain amount of time allowing some later queries to be 
+
+
+answered from the cache instead of always querying other DNS/ENUM 
+servers. 
+
+NOTE 2: The Originating Service Provider may apply an optional policy check upon 
+receiving any response. 
+
+It is recommended that no more than two ENUM Delegated Databases (that is First Level 
+and Second Level) be provisioned in a resolution "chain" for an E.164 number. However, an 
+originating Service Provider for ENUM queries needs to be able to query more than this that 
+is at least as many queries as there are labels in the ENUM FQDN (see section Error! 
+Reference source not found.). 
+
+5.3.4 Access to ENUM servers and Interconnection policy 
+
+Service Providers connected to the GRX/IPX network will be able to perform an ENUM 
+Query and obtain a result dependant on the policy established for data accessibility. That is, 
+either the querying Service Provider has access to all ENUM servers, or, an error is returned 
+(see section Error! Reference source not found. for more details on responses). 
+
+In some instances, it is possible to resolve an E.164 number to a URI, even though there is 
+no interconnection agreement (commercial or technical) with the target Service Provider for 
+the identified service. This may happen to an originating Service Provider in a number of 
+cases, including (but not necessarily limited to) the following: 
+
+. Where access to the ENUM Tier-2 is available due to interconnection agreement with 
+the destination Service Provider, but for a different service for example Push to Talk 
+over Cellular (PoC) agreement in place but no agreement for Voice/Video Share 
+(both services are based on IMS and hence use the same URI scheme). 
+. Using a localised ENUM architecture, such as that detailed in Annex B. 
+. Automatic derivation of the URI from the E.164 number for example 
+MAP_SRI_For_SM look-up (also known as an "IMSI look-up"), back-end connection 
+to a number range database (for example MNP database), static look-up table of 
+E.164 number block data assignment. For examples of architectures, see Error! 
+Reference source not found.. 
+
+
+In such a case, extra analysis needs to be performed by the Originating Service Provider on 
+the derived URI to check local policies on interconnection with regards to the Destination 
+Operator and the service being requested by the subscriber. Such a policy should also 
+dictate which interconnect address or third-party interconnect provider should be used in 
+routing the service. 
+
+For example, policy checking could take place in the service node (for example. MMSC, 
+S-CSCF, AS), or, it can take place in the local DNS caching server that is taking care of the 
+ENUM resolution. In both cases, there are commercially available solutions. 
+
+5.3.5 Number Portability considerations 
+
+Number Portability implementations differ from country to country, based on national 
+requirements and organisation of NDCs, thus there is no single solution that suits all 
+
+
+countries. Therefore, the ENUM architecture implemented by Service Providers who are part 
+of a NP "group", need to provide a common approach between them. 
+
+Different implementation options for support of Number Portability can be identified, where 
+some rely on the involvement of the Tier-1 as: 
+
+. Combined Tier-1 and Tier-2 ENUM database, at least per NP "group" 
+. Intelligent Tier-1 ENUM database that always redirects the querying entity to the 
+currently serving Service Provider 
+
+
+Other implementation options do not rely on the involvement of the Tier-1 and are managed 
+solely based on the service provider Tier-2 include 
+
+. Redirection from Tier-2 of number range owning Service Provider to the Tier-2 of the 
+currently serving Service Provider 
+. Final response from the Tier-2 of the number range owning Service Provider on behalf of 
+the Tier-2 of the currently serving Service Provider 
+
+
+The Number Portability resolution may be based on Information that is natively stored on the 
+ENUM server, or the Tier-1 or Tier-2 servers may interact in real-time with legacy systems 
+for Number portability to derive information about the currently serving Service Provider, and 
+provide responses based on this information. 
+
+Another aspect of number portability that needs to be considered is when the Tier-1 redirects 
+queries to the Tier-2 of the number range owning Service Provider, which shall provide 
+responses to cater for ported numbers. In case not all Service Providers within an ÅgNP 
+groupÅh participates in the GRX/IPX Carrier ENUM, there is no ÅgnaturalÅh Tier 2 server that 
+would be the first to query and which would cater for numbers that are ported out from that 
+Service provider. 
+
+See Error! Reference source not found. for more information on how to account for 
+Number Portability in ENUM. 
+
+5.4 Technical Requirements 
+
+5.4.1 Introduction 
+
+The implementation of Carrier ENUM on the GRX/IPX is currently in the process of being 
+rolled out. The following sections specify the agreed implementation details for ENUM on the 
+GRX/IPX network so that it is fully interoperable between all network entities. 
+
+5.4.2 ENUM Query 
+
+Carrier ENUM on the GRX/IPX reuses the ENUM Query procedures and format as 
+described in IETF RFC 3761 [3], with the exception that the top level domain name 
+"e164enum.net" shall be used instead of "e164.arpa". For example, for the E.164 number 
+447700900123, the translated ENUM FQDN to be resolved would be 
+3.2.1.0.0.9.0.0.7.7.4.4.e164enum.net. Therefore, all ENUM Servers that are part of the 
+Carrier ENUM for GRX/IPX shall support ENUM queries to this ENUM FQDN. 
+
+
+NOTE: In addition to "e164enum.net", other top level domains may also be 
+supported (for example in accordance with local in-country ENUM 
+requirements), however they must follow "e164enum.net" service 
+requirements. Only "e164enum.net" is mandatorily required for Carrier 
+ENUM on the GRX/IPX. 
+
+The top level domain name "e164enum.net" has been chosen for Carrier ENUM on the 
+GRX/IPX for the following reasons: 
+
+. To ensure there is no conflict with Public ENUM. 
+. It is registered on the Internet to GSMA 
+. Neutral to service provider technology i.e. neutral between mobile/fixed Service 
+Providers and IPX Providers 
+. Has an indication of its purpose that is E.164 and ENUM 
+. The Åg.netÅh suffix was felt to be relevant to the use of this domain. From IETF RFC 1032 
+[25]: 
+
+
+".net" was introduced as a parent domain for various network-type organizations. 
+Organizations that belong within this top-level domain are generic or network-specific, 
+such as network service centres and consortia. ".net" also encompasses network 
+management-related organizations, such as information centres and operations centres. 
+
+5.4.3 ENUM Response 
+
+5.4.3.1 General 
+
+All ENUM queries to the mandatory FQDN for Carrier ENUM on the GRX/IPX as defined in 
+section Error! Reference source not found. shall return a result that is they should never 
+be silently discarded by an ENUM server or firewall and so on (for example due to access 
+control lists). The result returned can be a pointer to another ENUM Server, a final result 
+(that is list of URIs/URLs) or a standard DNS/ICMP error. 
+
+In order to avoid querying entities having to support multiple NP solutions, terminating 
+Service Providers in countries that use Number Portability need to provide NP corrected 
+data in their final results. Such NP corrected final results should avoid relying upon the 
+querying entity supporting any nationally required NP solutions local to the terminating 
+Service Provider. 
+
+The NS RR (as defined in IETF RFC 1034 [1]) shall be used to provide a pointer to the next 
+ENUM Server to query. 
+
+The NAPTR RR (as defined in IETF RFC 3403 [6] and IETF RFC 3761 [3]) shall be used to 
+return a successful final response that is list of URIs/URLs for different service. The following 
+sections provide recommendations on how to populate the fields of the NAPTR RR. 
+
+5.4.3.2 URI formats 
+
+The domain name part of URIs returned in NAPTRs shall be in the format detailed in section 
+Error! Reference source not found. of the present document, to enable routing through the 
+GRX/IPX network using the current GRX/IPX DNS. 
+
+
+5.4.3.2.1 SIP/IMS URI format 
+
+The SIP/IMS URI format is: 
+
+sip:+<E.164_number>@<xxx>.mnc<MNC>.mcc<MCC>.3gppnetwork.org;user=phone 
+
+ 
+where "<xxx>" can be any characters or null (if null, then the trailing "." shall not be present), 
+and <MNC>/<MCC> are the MNC/MCC allocated to the Service Provider. Other domain 
+names that are routable on the inter-Service Provider IP network may also be used. 
+
+Ågsip:Åh indicates the protocol to be used which in this case is SIP. 
+
+With regard to the Åg<xxx>Åh prefix there was no consensus on using any specific value of 
+"<xxx>". However, in order to avoid conflicts with sub-domains allocated already (see 
+section Error! Reference source not found.) and any possible new sub-domains for new 
+services, the sub-domain of ".ims" is recommended. 
+
+The SIP URI parameter Åguser=phoneÅh is included to explicitly indicate that the user part 
+contains an E.164 number and is recommended in all cases. For operators that provision 
+the SIP URI NAPTR RR only for IMS subscribers, the SIP URI parameter Åguser=phoneÅh 
+could be excluded as long as the same SIP URI is also provisioned in their HSS. For 
+operators that provision the SIP URI NAPTR RR for both IMS and non-IMS subscribers, they 
+should always include the SIP URI parameter Åguser=phoneÅh in the SIP URI of the NAPTR 
+RR. 
+
+The following examples are all acceptable NAPTR RR SIP URIs for IMS where the E.164 
+number is 447700900123, the MNC is 01 and the MCC is 234: 
+
+sip:+447700900123@mnc001.mcc234.3gppnetwork.org 
+
+sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org 
+
+sip:+447700900123@imsnetwork.mnc001.mcc234.3gppnetwork.org 
+
+sip:+447700900123@mnc001.mcc234.3gppnetwork.org;user=phone 
+
+sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone 
+
+sip:+447700900123@imsnetwork.mnc001.mcc234.3gppnetwork.org;user=phone 
+
+ 
+
+For Service Providers who offer IMS based services it is recommended that, where possible, 
+all of that Service Provider's subscribers should be provisioned with a SIP URI. However, 
+Service Providers should be warned that if a subscriber who does not have an HSS entry is 
+provisioned with a NAPTR RR containing a SIP URI without the SIP URI parameter 
+Åguser=phoneÅh, this may result in SIP sessions/calls failing indefinitely (as the I-CSCF 
+handling the incoming session, after not finding any corresponding user in HSS, may not be 
+able request routeing based on the E.164 number contained in the SIP URI, due to the 
+absence of Åguser=phoneÅh). This is in contrast to when no SIP URI NAPTR RR is provisioned 
+for the user and the session/call being alternatively delivered via the PSTN by the originating 
+Service Provider. 
+
+It is recommended that a Service Provider should always include the SIP URI parameter 
+Åguser=phoneÅh in the SIP URI NAPTR RR and configure and set the I-CSCF to support the 
+Åglocal configuration optionÅh to attempt request routeing using the E.164 number derived from 
+the SIP URI as is described in Section 5.3.2 of 3GPP TS 24.229 [35] when the I-CSCF 
+
+
+receives the response to the location query from the HSS indicating that the user does not 
+exist. 
+
+5.4.3.2.2 SIP-I/Packet Voice Interconnect URI format 
+
+The same recommendations as in section Error! Reference source not found. apply here, 
+with the exception that the sub domain labelled Åg<xxx>" is recommended to be "sip-i" or be 
+absent/null. This is recommended in order to avoid conflicts with reserved sub-domains (see 
+section Error! Reference source not found.) and any possible new sub-domains for new 
+services. 
+
+5.4.3.2.3 MMS URI format 
+
+The MMS ENUM URI domain format is the following: 
+
+mailto:+<E.164_number>/TYPE=PLMN@mms.mnc<MNC>.mcc<MCC>.gprs 
+
+where <MNC>/<MCC> are the MNC/MCC allocated to the Service Provider. 
+
+The Ågmailto:Åh prefix indicates the protocol to be used which in this case is SMTP. It should be 
+noted that this prefix used to be "mms:", however, use of this prefix is now deprecated and 
+should no longer be used. For more information see 3GPP TS 23.140 [15]. 
+
+The following example is an acceptable mailto URIs for MMS where the E.164 number is 
+447700900123, the MNC is 01 and the MCC is 234: 
+
+mailto:+447700900123/TYPE=PLMN@mms.mnc001.mcc234.gprs 
+
+ 
+For Service Providers who offer MMS it is recommended that, where possible, all of that 
+Service Provider's subscribers should be provisioned with an MMS URI. This allows for all 
+MMS interconnecting Service Providers to utilise ENUM instead of MAP in order to 
+determine the destination Service Provider and thereby reduce load on that Service 
+Provider's HLR. 
+
+5.4.3.3 ENUMservice field 
+
+5.4.3.3.1 Introduction 
+
+The ENUMservice field appears in the NAPTR records for a particular E.164 number. It 
+describes the services supported by that number. See section Error! Reference source not 
+found. for an example. The following are recommended values to be used for different 
+services. 
+
+5.4.3.3.2 SIP/IMS 
+
+The ENUMservice to be used for IMS is ÅgE2U+SIPÅh as specified in IETF RFC 3764 [33]. 
+
+5.4.3.3.3 SIP-I/Packet Voice Interconnect 
+
+The ENUMservice to be used for SIP-I/Packet Voice Interconnect is "E2U+PSTN:SIP" as 
+specified in IETF RFC 4769 [43]. 
+
+
+5.4.3.3.4 MMS 
+
+The ENUMservice to be used for MMS is ÅgE2U+MMS:mailtoÅh as specified in IETF RFC 4355 
+[34]. 
+
+It should be noted that this ENUMservice used to be "mms+E2U". However, use of this 
+ENUMservice field value is now deprecated and should no longer be used. For more 
+information see 3GPP TS 23.140 [15]. 
+
+5.4.3.3.5 Other services 
+
+The value for the ENUMservice field to be used for any other service that uses the GSMA 
+Carrier ENUM service should seek to reuse those values that have been reserved with IANA 
+as detailed in the List of ENUMservice Registrations [32]. Private/non standardised 
+ENUMservice field values should be avoided and instead, registration with IANA should be 
+sought (as per the IANA registration process defined in IETF RFC 3761 [3]). 
+
+5.4.3.4 Example NAPTR RR 
+
+The following shows an example of the E.164 number +447700900123 that supports 
+SIP/IMS, SIP-I/Packet Voice Interworking and MMS, in a Service Provider's network with 
+E.212 number range of MNC 01 and MCC 234 allocated to it. Note that the $ORIGIN 
+statement is used here to ensure correct syntax and would have limited use in a large scale, 
+live DNS. 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 100 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+ NAPTR 100 10 "u" "E2U+PSTN:SIP" 
+
+ "!^.*$!sip:+447700900123@sip-i.mnc001.mcc234.3gppnetwork.org!" . 
+
+ NAPTR 100 10 "u" "E2U+MMS:mailto" 
+
+ "!^.*$!mailto:+447700900123/TYPE=PLMN@mnc001.mcc234.3gppnetwork.org!" . 
+
+The querying application asks the DNS for all the NAPTR records for a given E.164 number. 
+There may be multiple NAPTR records returned as in this example. The querying application 
+then selects the NAPTR record(s) that contains the desired service(s), and discards the rest. 
+
+The "u" flag indicates the result of this lookup is a URI. The last part of the NAPTR is a 
+Regular Expression and the querying application applies the Regular Expression to the 
+query string (that is the E.164 number) to get the result.. In the example above the pattern of 
+Åg^.*$Åh instructs the application to match all and any text from the start to the end of the query 
+string (that is the E.164 number) and replace it with the following string delimited by the 
+following two Åg!Åh, which contains a complete URI/URL. 
+
+As an alternative to including a complete URI/URL, many DNS/ENUM servers make use the 
+input regular expression operator ("\1"). This instructs the querying application to insert the 
+query string (that is the E.164 number used for the query) wherever it appears. This saves 
+repeating of the E.164 number itself in the URI/URL. 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 100 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:\\1@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+ NAPTR 100 10 "u" "E2U+PSTN:SIP" 
+
+ "!^.*$!sip:\\1@sip-i.mnc001.mcc234.3gppnetwork.org!" . 
+
+ NAPTR 100 10 "u" "E2U+MMS:mailto" 
+
+ "!^.*$!mailto:\\1/TYPE=PLMN@mnc001.mcc234.3gppnetwork.org!" . 
+
+
+ 
+
+Here the pattern Åg^.*$Åh once again instructs the application to match all and any text from the 
+start to the end of the query string (that is the E.164 number) and replace it with the following 
+string delimited by the following two Åg!Åh, which now contains Åg\\1Åh (there are two "\" here to 
+prevent the operator being applied too early) instructing the querying application to insert the 
+query string (that is the E.164 number). The resulting URIs/URLs returned by these regular 
+expressions evaluate to the same as in the first example. 
+
+6 Processes and Procedures relating to DNS 
+
+6.1 Introduction 
+
+This section describes the processes and procedures relating to DNS that apply to Service 
+Providers and GRX/IPX Providers. 
+
+6.2 Existing domains/sub-domains on the GRX/IPX network and their 
+Allocation 
+
+The domain names for use by Service Providers on the GRX/IPX network are the following: 
+
+. .gprs 
+. .3gppnetwork.org 
+. .ipxsp.org 
+. .e164enum.net 
+
+
+Only the sub-domains listed in section Error! Reference source not found. for each of the 
+above domains should be used. 
+
+The domain name ".e164enum.net" is used only for Carrier ENUM on the GRX/IPX; see 
+section Error! Reference source not found. for more information. 
+
+The domain names for use by GRX/IPX Providers on the GRX/IPX are the same as those 
+above, when a GRX/IPX Provider is hosting services on behalf of a Service Provider. For all 
+other services and also for GRX/IPX network equipment (for example routers, MMS Hubs, 
+etc.), it is recommended to use ipxnetwork.org, see section 2.3.3. The ".grx" domain name 
+also is commonly used, but should be reserved for legacy equipment on the GRX network. 
+The sub-domains on Åg.grxÅh and Ågipxnetwork.orgÅh are agreed amongst other GRX/IPX 
+Providers and assigned on a first come . first served basis in order to guarantee uniqueness 
+(a good place to discuss this with other GRX/IPX Providers is the GRX Working Party). 
+
+6.3 Procedures relating to new domain names on the GRX/IPX network 
+
+New domain names may be added to the GRX/IPX network's DNS by any Service Provider 
+or GRX/IPX Provider, in order to enable further services to be used on the NNI provided by 
+the GRX/IPX network. This could be to allow such things as resolution of domain names 
+used for national interconnect agreements, and so on. However, wherever possible, the 
+existing sub-domains of the domain names specified in section Error! Reference source 
+not found. should be reused. 
+
+
+It is recommended that new domain names to be added to the GRX/IPX network's DNS are: 
+
+. a sub-domain of a Country Code Top Level Domain (ccTLD); 
+. registered/reserved on the Internet, in order to prevent any issues of ownership; 
+. not provisioned on the Internet (that is. not resolvable, at least no more than is absolutely 
+necessary for example to retain ownership as per the rules of some ccTLD authorities); 
+. hosted in their own authoritative DNS server(s) on the GRX/IPX network, which is linked 
+from the GRX/IPX Root DNS that is by using NS record entries (this eases 
+administration of the new domain name and also prevents the GRX/IPX Root DNS 
+becoming unmanageable); and 
+. used by an entity in addition to either their "mnc<MNC>.mcc<MCC>.3gppnetwork.org" 
+domain name or "spn<SPN>.ipxsp.org" domain name, as specified in section Error! 
+Reference source not found. (amongst other things, this enables network node naming 
+as per section Error! Reference source not found.). 
+
+
+The hosting authoritative DNS server(s) need to be reachable and respond to queries from 
+all Service Providers and/or GRX/IPX Providers that need to resolve associated FQDNs. 
+Ideally, access should be allowed to all entities on the GRX/IPX network, but only those who 
+need to should have their queries properly serviced; the rest should be returned a standard 
+DNS or ICMP error. 
+
+Care should be taken to not inadvertently force another entity who is denied 
+access/resolvability of the domain name into (automatically or otherwise) trying to resolve it, 
+including (but not necessarily limited to): 
+
+. by using only the new domain name in general network node naming (network node 
+naming should still be done as per section Error! Reference source not found., using 
+the domain names recommended therein); and 
+. by returning it in a NAPTR and/or SRV record (for example as used in IMS/SIP, ENUM, 
+EPC). 
+
+
+For domain names that need to be resolvable on the UNI, the Internet DNS should always 
+be used. By design, the GRX/IPX DNS provides resolution only for entities connected to the 
+NNI. 
+
+6.4 Description of the Master Root DNS service and modality of access 
+
+6.4.1 Master Root DNS services 
+
+The Master Root DNS provides authoritative naming management and address resolution 
+mechanisms for the GSMA community that includes GRX Providers, IPX Providers and 
+Mobile Network Operators. This translates into two main functions: 
+
+. Assignment and administration of domain names according to IR67 specification 
+. DNS zone transfer and query resolution services 
+
+
+The Root DNS is currently available at three peering locations (Amsterdam in the 
+Netherland, Singapore and Ashburn in the United States). Additional locations can be added 
+as necessary. 
+
+
+6.4.2 How to access Master Root DNS services 
+
+For an entity (GRX/IPX Provider or Mobile Network Operator) to connect to the Root DNS 
+and access its services it is required to first register and become a ÅgparticipantÅh. The 
+registration involves a light accreditation process to verify the identity the entities connecting 
+to system and the intended use of the services. 
+
+The accreditation process is simple and usually requires five working days. As part of the 
+accreditation process the entity is required to fill in a form called the Ågparticipating 
+agreementÅh. The participating agreements contains the terms and conditions for the use of 
+the service and some basic information of the applying entity such company name, technical 
+and administrative contract, GRX/IPX peering points. 
+
+Once it has been completed the form is sent to the Master Root DNS operator (Neustar) that 
+is responsible to check and verify the information provided using appropriate sources 
+including the IR21 database. If the verification is passed a contract is sent to the applying 
+entity to be signed. If information is missing or incorrect the applying entity is required to 
+resubmit the participating agreement. 
+
+If an application request is either controversial or unsuccessful, it is escalated to GSMA staff 
+for their consideration and their final decision. The applying entity can appeal against a 
+rejection by contacting the GRX/IPX chair. 
+
+Once the accreditation process has been completed and the contract has been signed, the 
+Root DNS customer is activated. As part of the activation process a customer account is 
+created in the system and a secureID Token is send to the ÅgparticipantÅh with password 
+activation to allow the customer access the system through a secure web portal interface 
+over the Internet. The peering between the customer and the Root DNS is established and 
+tested. As final step of the activation process the customerÅfs name servers are provisioned 
+in the Master Root DNS system. 
+
+Once the activation process is completed the customer can start provisioning information in 
+the Root DNS through the web portal. The customer then can create, delete, modify and 
+transfer domain names on behalf of Mobile Operators and its other customers according to 
+the rules defined in IR67. 
+
+For any administrative, technical and operation issue regarding the service, including the 
+form required for the accreditation process, please contact gsma_root_dns@gsma.com. 
+
+6.5 Delegation of sub-domains of Ågpub.3gppnetwork.orgÅh 
+
+GSMA can delegate a sub-domain of pub.3gppnetwork.org to DNS of an MNO. The routine 
+specified by GSMA operations, that the MNO needs follow to do this, consists of the 
+following steps: 
+
+1. Identify MCC and MNC values for the MNO. 
+2. Identify CNAME record for the domain to be transferred. 
+
+
+The CNAME record shall be in format of: 
+<ABC>.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+
+where 
+
+acceptable values of <ABC> are defined in 2.3.4 (other values might be added as 
+needed; see also NOTE 2 below) 
+
+<MNC> and <MCC> have to be replaced by respective values of the home network in 
+decimal format, with a 2-digit MNC padded out to 3 digits by inserting a 0 at the 
+beginning. 
+
+NOTE 1: For RCS configuration server CNAME record should be in format of 
+http://config.rcs.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+
+NOTE 2: An operator may wish to delegate the entire 
+mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org sub-domain. 
+
+3. Create the Zone File on the MNOÅfs own NameServer/DNS with the CNAME record 
+specified in step 2. 
+4. Complete the Request Form in Annex D.1 and - if required for your use of the sub-
+domain - also the Letter of Authorization in Appendix D.2, and send both to GSMA 
+at 3gppnetwork.org_delegation@gsma.com 
+
+
+ 
+
+NOTE 3: the Letter of Authorization format (Annex D.2) may need to be adapted 
+dependent on your selected Certificate BodyÅfs requirements. If in doubt, 
+please contact a Certificate Body of your choice, and obtain a necessary 
+template to be filled in by MNO and signed by GSMA as the registrant of 
+3gppnetwork.org domain. 
+
+5. GSMA will process the request, delegate the requested subdomain to MNOÅfs 
+DNS, and return a signed copy of the Letter of Authorization to MNO. 
+
+
+NOTE 4: the typical maximum lead time to process the Request Form and sign the 
+Letter is five (5) working days. 
+
+NOTE 5: the requesting MNO is responsible for submitting the Letter to their 
+Certificate Authority. 
+
+ 
+
+
+Annex A Sample BIND DNS Configuration for GPRS 
+
+A.1 Introduction 
+
+All sample configurations of this annex are in valid syntactical format for the ISC BIND DNS 
+server software. However, the samples are not from actual DNS configuration and contain 
+only example information, including sample IP addresses which are not valid. They are 
+provided for illustration purposes only. It is therefore highly recommended NOT to use these 
+samples in live networks! The GSM Association takes no responsibility of the usage of these 
+configurations in any operators DNS servers and/or live networks. 
+
+A.2 The "named.conf" file 
+
+The "named.conf" file has configuration information for BIND software. Following is only the 
+necessary configuration to get DNS running. There are many more options that may also be 
+useful, but which are not shown here, simply for making the examples as simple as possible. 
+
+A.2.1 The "named.conf" file for a PLMN Master Nameserver 
+
+options { 
+directory "/var/named"; 
+}; // where the files reside 
+
+zone "." in { 
+type hint; 
+file "gprs.hint"; 
+}; // gprs root servers 
+
+zone "0.0.127.in-addr.arpa" in { 
+type master; 
+notify no; 
+file "master/0.0.127.in-addr.arpa"; 
+}; // only contains information about localhost. 
+
+/* 
+* PLMN domain information 
+*/ 
+
+zone "mnc091.mcc244.gprs" in { 
+type master; 
+file "master/mnc091.mcc244.gprs"; 
+}; 
+
+zone "sonera.fi.gprs" in { 
+type master; 
+file "master/sonera.fi.gprs"; 
+}; // human readable operator id 
+
+zone "168.192.in-addr.arpa" in { 
+type master; 
+file "master/168.192.in-addr.arpa"; 
+}; 
+
+
+A.2.2 The "named.conf" file for a PLMN Slave Nameserver 
+
+options { 
+directory "/var/named"; 
+}; // where the files reside 
+
+zone "." in { 
+type hint; 
+file "gprs.hint"; 
+}; // gprs root servers 
+
+zone "0.0.127.in-addr.arpa" in { 
+type master; 
+notify no; 
+file "master/0.0.127.in-addr.arpa"; 
+
+}; // only contains information about localhost. 
+
+/* 
+* PLMN domain information 
+*/ 
+
+zone "mnc091.mcc244.gprs" in { 
+type slave; 
+file "slave/mnc091.mcc244.gprs"; 
+masters {192.168.1.2;} // address of master nameserver 
+}; 
+
+zone "sonera.fi.gprs" in { 
+type master; 
+file "slave/sonera.fi.gprs"; 
+masters {192.168.1.2;} // address of master nameserver 
+}; // human readable operator id; 
+
+zone "168.192.in-addr.arpa" in { 
+type slave; 
+file "slave/168.192.in-addr.arpa"; 
+masters {192.168.1.2;} // address of master nameserver 
+}; 
+
+A.3 Zone Configuration Files 
+
+Recommended values for SOA records are as specified in ripe-203. 
+
+A.3.1 The "gprs.hint" file 
+
+This file contains ".gprs" root nameservers needed to initialise cache of ".gprs" nameservers. 
+Note that the Åg.Åh character is indeed significant. 
+
+. 518400 IN NS dns0.root.gprs. 
+dns0.root.gprs. IN A 172.22.1.5 
+
+. 518400 IN NS dns1.root.gprs. 
+dns1.root.gprs. IN A 10.254.243.7 
+
+. 518400 IN NS dns2.root.gprs. 
+dns2.root.gprs. IN A 192.168.17.232 
+
+
+A.3.2 The "0.0.127.in-addr.arpa" file 
+
+This file contains only information about localhost i.e. 127.0.0.1 
+
+$TTL 172800 
+
+@ IN SOA localhost.. hostmaster.localhost. ( 
+2000030701 ; serial (YYYYMMDDvv) 
+86400 ; refresh (24 hours) 
+7200 ; retry (2 hours) 
+3600000 ; expire (1000 hours) 
+172800 ) ; minimum time to live (2 days) 
+
+1 IN PTR localhost. 
+
+A.3.3 PLMN zone files 
+
+PLMN may configure both mnc.mcc.gprs and operaror.cc.gprs type domains that will share 
+exactly the same host information. In addition, early versions of GTPv0 did not have leading 
+zeroes to make mnc code always 3 digits long. In order to minimise both configuration work 
+and possible errors, zone files may include a common host configuration. 
+
+A.3.3.1 The "mnc091.mcc244.gprs" file 
+
+$TTL 172800 
+
+@ IN SOA mnc091.mcc244.gprs. hostmaster.mnc091.mcc244.gprs. ( 
+2000030701 ; serial (YYYYMMDDvv) 
+86000 ; refresh (24 hours) 
+7200 ; retry (2 hours) 
+3600000 ; expire (1000 hours) 
+172800 ) ; minimum time to live (2 days) 
+
+ IN NS dns0 
+IN NS dns1 
+
+$INCLUDE master/hosts 
+
+A.3.3.2 The "sonera.fi.gprs" file 
+
+$TTL 172800 
+
+@ IN SOA sonera.fi.gprs. hostmaster.sonera.fi.gprs. ( 
+2000030701 ; serial (YYYYMMDDvv) 
+86400 ; refresh (24 hours) 
+7200 ; retry (2 hours) 
+3600000 ; expire (1000 hours) 
+172800 ) ; minimum time to live (2 days) 
+
+ IN NS dns0 
+IN NS dns1 
+
+$INCLUDE master/hosts 
+
+A.3.4 The "hosts" file 
+
+This file contains IP address records for all hosts in the PLMN. The origin changes 
+depending on which file includes the contents i.e. after the names not ending at dot, the 
+current domain name is appended automatically. 
+
+Load balancing may be performed configuring same access point with several IP addresses 
+that actually are on different GGSNs. In this case, addresses are used in round-robin 
+
+
+fashion. However, DNS information is cached and a new query is performed only when the 
+TTL (time-to-live) has expired. Therefore TTL of 0 seconds is configured for load balanced 
+access points. 
+
+dns0 IN A 192.168.1.2 
+dns1 IN A 192.168.2.2 
+
+; 
+; router 
+helsinki-rtr-1-fe-0-0 IN A 192.168.1.254 
+helsinki- rtr-1-fe-0-1 IN A 192.168.2.254 
+helsinki- rtr-1-fe-0-2 IN A 192.168.3.254 
+helsinki- rtr-1-s-1-0 IN A 172.22.5.6 
+
+; 
+; access point 
+ibm.com IN A 192.168.1.5 
+
+; 
+; load balanced access point 
+compaq.com 0 IN A 192.168.1.5 
+0 IN A 192.168.2.5 
+
+; 
+; service access point 
+internet IN A 192.168.2.2 
+
+; 
+; GGSN 
+helsinki-ggsn-15 IN A 192.168.1.5 
+helsinki- ggsn-25 IN A 192.168.2.5 
+helsinki- ggsn-22 IN A 192.168.2.2 
+
+; 
+; SGSN 
+helsinki-sgsn-1 IN A 192.168.3.3 
+; SGSN with RAI 
+racF1.lac12EF IN A 192.168.3.3 
+
+
+A.3.5 The "168.192.in-addr.arpa" file 
+
+There may be several PTR records so that each name associated with and address may 
+have reverse mapping also. Note that IP address is reversed in in-addr.arpa domain i.e. 
+192.168.1.254 will be 254.1.168.192.in-addr.arpa. 
+
+$TTL 172800 
+
+@ IN SOA dns0.sonera.fi.gprs. hostmaster.sonera.fi.gprs. ( 
+2000030701 ; serial (YYYYMMDDvv) 
+86400 ; refresh (24 hours) 
+7200 ; retry (2 hours) 
+3600000 ; expire (1000 hours) 
+172800 ) ; minimum time to live (2 days) 
+
+ IN NS dns0.sonera.fi.gprs. 
+IN NS dns1.sonera.fi.gprs. 
+
+5.1 IN PTR ibm.com.sonera.fi.gprs. 
+PTR ibm.com.mnc091.mcc244.gprs. 
+PTR compaq.com.sonera.fi.gprs. 
+PTR compaq.com.mnc091.mcc244.gprs. 
+PTR helsinki-ggsn-15.sonera.fi.gprs. 
+PTR helsinki- ggsn-15.mnc091.mcc244.gprs. 
+
+254.1 IN PTR helsinki-rtr-1-fe-0-0.sonera.fi.gprs. 
+PTR helsinki- rtr-1-fe-0-0.mnc091.mcc244.gprs. 
+
+2.2 IN PTR internet.sonera.fi.gprs. 
+PTR internet.mnc091.mcc244.gprs. 
+PTR helsinki-ggsn-2.sonera.fi.gprs. 
+PTR helsinki- ggsn-2.mnc091.mcc244.gprs. 
+
+5.2 IN PTR compaq.com.sonera.fi.gprs. 
+PTR compaq.com.mnc091.mcc244.gprs. 
+PTR helsinki-ggsn-25.sonera.fi.gprs. 
+PTR helsinki-ggsn-25.mnc091.mcc244.gprs. 
+
+254.2 IN PTR helsinki-rtr-1-fe-0-1.sonera.fi.gprs. 
+PTR helsinki-rtr-1-fe-0-1.mnc091.mcc244.gprs. 
+
+3.3 IN PTR helsinki-sgsn-1-fe.sonera.fi.gprs. 
+PTR helsinki-sgsn-1-fe.mnc091.mcc244.gprs. 
+PTR racF1.lac12EF.sonera.fi.gprs. 
+PTR racF1.lac12EF.mnc091.mcc244.gprs. 
+
+254.3 IN PTR helsinki-rtr-1-fe-0-2.sonera.fi.gprs. 
+PTR helsinki-rtr-1-fe-0-2.mnc091.mcc244.gprs. 
+
+
+Annex B Alternative ENUM Architecture: Multiple Root Model 
+
+B.1 Introduction 
+
+This Annex describes an alternative to the preferred ENUM architecture model described in 
+section Error! Reference source not found.. As per the preferred ENUM architecture 
+model, the following model utilises the technical requirements as detailed in section Error! 
+Reference source not found., allowing full interoperability between Service Provider and 
+different ENUM Service Providers (ESPs). 
+
+In this architecture model, a common root DNS server is not utilised. Instead, the root node 
+functionality along with the ENUM Tier 0 and possibly also the Tier 1 are provisioned by an 
+authoritative database either within the operator's network or outside the operator's network 
+via a service bureau. In essence, this means that connection to the GRX/IPX Carrier ENUM 
+is not a requirement, although, the GRX/IPX may be used to interconnect the end user 
+service. It also means that an operator implementing this option does not necessarily have to 
+wait for roll out of an ENUM Tier 1 server for the destination operator. 
+
+Operators who implement this option need to also apply a policy to the derived URI, as 
+discussed in section Error! Reference source not found., to avoid late session-
+establishment-failure or even worse, session-connection-timeout for their subscribers. 
+
+B.2 Architecture 
+
+The architecture for this model has many Authoritative Database provisioning options. This 
+means that Service Providers have flexibility and may choose how to provision their ENUM 
+databases depending on their network and market or regulatory environment. This has an 
+advantage in that it allows Service Providers to choose the best option for their environment, 
+based on such factors as local numbering policy, number portability solution, etc. 
+
+What remains the same though is that the Tier-2 server for the destination operator is 
+identified. 
+
+
+The architecture for this model is depicted in the following figure: 
+
+ 
+
+Figure 15: Architecture for the Multiple Root Model 
+
+
+It is an implementation option as to when a Service Provider provisions their own ENUM 
+Server or utilises an ENUM Server in an ESP for destination numbers. 
+
+
+ENUM requests to an external network (e.g. GRX/IPX) and consequently to an authoritative 
+DNS server in Service Provider B, is optional and occurs only when the ENUM Server does 
+not return a final answer. 
+
+The ESP Determination DNS Server is used by the Service Provider to utilise multiple 
+ENUM Servers (residing in their own network and/or in one or more ESPs) or, one or more 
+ENUM Servers and the Single Root architecture model (further specification on interworking 
+between the two architectural models is FFS in a future version of the present document). 
+The Local Caching DNS Server needs to be preconfigured to forward DNS requests for 
+domains ending in "e164enum.net" to the ESP Determination DNS Server. Alternatively, the 
+two nodes/features can be provisioned on the same platform. 
+
+As shown above, there are three different implementation models that leverage existing 
+industry sources of number-assignment data: 
+
+. Number portability database: ENUM server or ESP utilizes an existing authoritative 
+number portability database to determine the destination carrier for a given dialled 
+number. The operator originating the query uses local policy information to provision an 
+appropriate entry-point address for each of its interconnect partners as shown below. 
+. Number-block database: ENUM server or ESP utilizes an existing authoritative 
+number-block assignment database to determine the destination carrier for a given 
+dialled number. This model works in any country that does not support number-
+portability. 
+. MAP SRI for SM query: ENUM server or ESP utilizes existing HLR databases to 
+discover the destination carrier for GSM networks around the world. 
+
+
+B.3 Resolution 
+
+The address resolution process in this model breaks down into the following logical steps: 
+
+Identify the ESP to use (given the dialled number); 
+
+. Identify the Subscribed Network (using the determined ESP). 
+
+
+Local policy should be applied either at the ESP or in the Service Provider network, as 
+detailed in section Error! Reference source not found.. 
+
+The following figure depicts an example ENUM resolution for this model, after the Core 
+Routing Platform has sent the necessary ENUM query to its local caching DNS server: 
+
+
+ENUM Service ProviderOriginating Service ProviderLocal Caching 
+DNS ServerDestination Service Provider(subscribed network)
+ENUM DNS 
+ServerENUM DNS 
+Server13245a5bESP Determination 
+DNS Server 
+
+
+Figure 16: Example ENUM resolution in the Multiple Root Model 
+
+
+The numbers in the messages in the above figure refer to the below: 
+
+1. Service Provider's Local Caching DNS Server sends the DNS query to its own ESP 
+Determination DNS Server (which is essentially a DNS server that is authoritative for 
+"e164enum.net"). 
+2. ESP Determination DNS Server analyses the queried ENUM FQDN. It then replies with 
+the NS record for the Service Provider's chosen ESP for that domain (based on 
+pre-configuration). 
+3. Service Provider re-sends the DNS query, but to the Special ENUM DNS Server in the 
+ESP. 
+4. The ESP looks-up the E.164 number by using connections to existing ENUM servers, 
+referencing number block data, querying (M)NP databases and/or by issuing a 
+MAP_SRI_For_SM to the target network's HLR. It then replies with a list of URIs/URLs 
+associated with the given E.164 number in NAPTR records, or the NS record(s) of the 
+subscribed network's authoritative DNS server. 
+5. If the ESP replied with (an) NS record(s), then: 
+. a) The Service Provider re-sends the query, but to the subscribed network's 
+authoritative DNS server. 
+. b) The subscribed network replies with a list of URIs/URLs associated with the 
+given E.164 number in NAPTR records. 
+
+
+
+
+
+
+NOTE: As per normal DNS procedures, each reply a Service Provider receives is 
+cached for a certain amount of time, therefore, negating the need of every 
+message shown always having to be sent. 
+
+
+B.4 Access to ENUM Servers 
+
+In this model, the ENUM Service Provider takes care of all commercial agreements and any 
+charges incurred for access to the sources of its back-end data used to service queries from 
+Service Providers. The Service Provider typically will have a commercial agreement with an 
+ENUM Service Provider (of which may include charges). Access to Service Provider Tier-2 
+servers is still required though. 
+
+B.5 Interworking with the preferred model 
+
+Service Providers who utilise this model still have to provide ENUM DNS Tier-1 and Tier-2 
+servers to enable other Service Providers utilising the preferred model (as described in 
+sub-clause 5.3) to be able to resolve their queries. Such provisioning is implementation 
+dependent, and no recommendations are made in the present document. 
+
+
+Annex C Solving Number Portability in ENUM 
+
+C.1 Introduction 
+
+This section describes and analyses different approaches for provisioning ENUM in 
+countries where Number Portability exists. The approach used will depend on the Number 
+Portability solution used in the local county for the hosted number ranges. 
+
+The different approaches can be categorized based on at which Tier the knowledge about 
+ported users is available. At a centralized Tier-1 ENUM DNS server or decentralized at the 
+Tier-2 ENUM DNS servers 
+
+C.2 Options based on number portability knowledge at a central ENUM 
+server 
+
+C.2.1 Option 1 . Central authoritative database 
+
+C.2.1.1 Description 
+
+This option consists of combining the Tier-1 and Tier-2 ENUM tiers and having the country 
+level ENUM DNS server authoritative for all subscribers. This means that all URIs and/or 
+URLs for subscribers are centrally located and managed. 
+
+ 
+Service Provider 1Service Provider 2Number range holder for: 
++ 4477009xxxxxNumber range holder for 
++4477010xxxxxCombined Tier 1/Tier 2+447700900123:
++447700900122-> NAPTR:@SP1+447700900123 -> NAPTR:@SP1+447700900123-> NAPTR:@SP2+447700900124-> NAPTR:@SP1: 
+Holds all e.164 number 
+entries for the Country/ 
+ÅhNP groupÅh, providing 
+NAPTR records on 
+behalf of the service 
+providers currently 
+serving each e.164 
+number
+
+Figure 17: Central Authoritative database 
+
+
+ 
+
+
+C.2.1.2 Example Configuration 
+
+If the subscriber whose E.164 number is +44-7700-900123 is a subscriber of Service 
+Provider 1 in the UK, his SIP URI (for IMS) could be 
+"SIP:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone" and would be 
+provisioned in his ENUM record in the central database as follows: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+
+If this subscriber then moved/ported over to Service Provider 2 in the UK, then this SIP URI 
+in the central database would simply be modified to be 
+"SIP:+447700900123@ims.mnc002.mcc234.3gppnetwork.org;user=phone" thus: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org;user=phone!" . 
+
+C.2.1.3 Advantages and Disadvantages 
+
+The obvious disadvantage of this option is that the data-fill for such a combined Tier-1/2 
+could be very large! The widely used, freely available ISC BIND DNS server application 
+would more than likely not be able to cope with such a data-fill for this solution. However, 
+there are high capacity ENUM/DNS solutions commercially available. 
+
+This option does have the advantage though that all subscriber numbers are stored centrally 
+and so can be centrally controlled and administered, possibly by one O&M facility. It also has 
+the advantage in that it reduces the number of DNS requests that an ENUM/DNS resolver 
+has to perform by one DNS Request therefore the extra time taken to search through a 
+larger set of zone files to return the NAPTR records may in some circumstances actually be 
+quicker than the DNS resolver having to perform a further DNS look-up to a separate Tier-2. 
+
+C.2.1.4 Suitability 
+
+This option is possibly more suited to countries having a central ENUM Tier 1 server and 
+where their MNPs are already realised using a central (M)NP database. 
+
+C.2.2 Option 2 . Central redirection database 
+
+C.2.2.1 Description 
+
+This option consists of combining the Tier-1 and Tier-2 ENUM tiers but instead of having the 
+country level ENUM DNS server store the URIs and/or URLs for subscribers, each 
+subscriber record contains a special redirection indicator for all incoming look-ups. The 
+indicator provides a pointer to the subscribed network. This "capture all" redirection can be 
+realised using a single NS record. This NS record redirects the ENUM/DNS Resolver to the 
+newly subscribed network's ENUM/DNS server by returning a new DNS server to query. 
+This means that all URIs and/or URLs for subscribers are located and managed by the 
+actual subscribed network of each number, rather than the number range owning network of 
+each number. 
+
+
+Tier 2 ENUM for SP1Tier 2 ENUM for SP1Tier 1SP 1SP 2+447700900123-> NAPTR@SP2:
++447701000001-> NAPTR@SP2 
+:
+:
++447700900122-> NAPTR@SP1+447700900123 -> NAPTR@SP1+447700900124-> NAPTR@SP1:
+Number range holder for: 
++ 4477009xxxxxNumber range holder for 
++4477010xxxxx+447700900123Holds entries for 
+.currently served e.164 
+numbers, within own 
+number range,and.currently served ported-in 
+e.164 numbers from 
+other number rangesHolds redirection entries(NS records) for 
+.the Number range 
+holders (ONRH), and.for Numbers that are 
+ported within those 
+ranges+447700900000:> NS@SP1+447700900122+447700900123-> NS@SP2:
++4477010Åc.-> NS@SP2: 
+
+
+Figure 18: Central redirection database 
+
+
+C.2.2.2 Example 
+
+If the subscriber whose E.164 number is +44-7700-900123, and is also a subscriber of 
+Service Provider 1 in the UK, his record in the Central Database would be as follows: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 IN NS dns1.mnc001.mcc234.3gppnetwork.org 
+
+ 
+And would be reflected in Service Provider 1's DNS server (called 
+"dns1.mnc001.mcc234.3gppnetwork.org") as follows: 
+
+$ORIGIN 3.2.1.0.0.9.0.0.7.7.4.4.e164enum.net. 
+
+ NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+If this subscriber then moved over to Service Provider 2 in the UK, then the ENUM record 
+stored in the Central Database would be modified to the following: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 IN NS dns1.mnc002.mcc234.3gppnetwork.org 
+
+ 
+And hence, Service Provider 2's DNS server (called 
+"dns1.mnc002.mcc234.3gppnetwork.org") would be: 
+
+$ORIGIN 3.2.1.0.0.9.0.0.7.7.4.4.e164enum.net. 
+
+ NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+
+C.2.2.3 Advantages and Disadvantages 
+
+The main advantage of this option is that it puts the subscribed operator in full control of the 
+URIs/URLs returned for a particular Tel URI. An explicit advantage over option 3 is that the 
+newly subscribed network is not reliant upon the number range owning network to make any 
+updates in their ENUM DNS server, only the Tier-1. 
+
+An explicit disadvantage over option 1 though is that the DNS Resolver may have to perform 
+either one additional ENUM DNS look-up to the Tier-2 ENUM DNS server. 
+
+As for option 1, the obvious disadvantage of this option is that the data-fill for the Tier-1 
+could be very large! The widely used, freely available ISC BIND DNS server application 
+would more than likely not be able to cope with such a data-fill for this solution. However, 
+there are high capacity ENUM/DNS solutions commercially available. 
+
+C.2.2.4 Suitability 
+
+This option is possibly more suited to countries having a central ENUM Tier 1 server and 
+where their MNP is already realised using a central MNP database. 
+
+ 
+
+C.3 Options based on number portability knowledge at Service Provider Tier-
+2 ENUM server 
+
+These options have in common that the Tier-1 ENUM/DNS server redirects to the Tier-2 
+ENUM/DNS of the Service Provider originally owning the number range. 
+
+A common disadvantage for these options compared to the centralized server options is 
+that, to work properly, all Service Provider within an NP Group should have a Tier-2 ENUM 
+DNS server. 
+
+Potential methods and measures to deal with the problem of not all Services Provider having 
+an ENUM/DNS server are discussed in section Error! Reference source not found.. 
+
+An advantage with this option over the centralized server approaches is that is does not 
+require a per country centralized server. In countries where there are problems to establish 
+such a Tier-1 server, the decentralized options 3 to 6 described below can still be applied 
+when the Tier-1 functionality to redirect to the number range ownerÅfs ENUM DNS server can 
+be hosted on the Tier 0 server. 
+
+ 
+
+C.3.1 Option 3 . Change of domain name in URIs/URLs in Tier-2 
+
+C.3.1.1 Description 
+
+This option is similar to the previous one in that it consists of simply changing the domain 
+name in all URIs and/or URLs under individual E.164 number entries to the identity of the 
+newly subscribed network. However, the Tier-1 and Tier-2 are not combined but kept 
+separate. 
+
+
+Tier 2 ENUM for SP1Tier 2 ENUM for SP1Tier 1SP 1SP 2:
++447701000001-> NAPTR@SP2 
+:
++4477009Åc.-> NS SP1+4477010Åc.-> NS SP2:
++447700900122-> NAPTR@SP1+447700900123 -> NAPTR@SP1+447700900123 -> NAPTR@SP2+447700900124-> NAPTR@SP1:
+Number range holder for: 
++ 4477009xxxxxNumber range holder for 
++4477010xxxxx+447700900123Holds entries for 
+.all currently served 
+e.164 numbers, and 
+.ported numbers 
+within own number 
+rangeHolds redirection 
+entries (NS records) 
+for the Number range 
+holders (ONRH) 
+
+
+Figure 19: Change of Domain Names of URI/URLs in Tier-2 
+
+
+ 
+
+C.3.1.2 Example 
+
+If the subscriber whose E.164 number is +44-7700-900123 is a subscriber of Service 
+Provider 1 in the UK, his SIP URI (for IMS) could be 
+"SIP:+447700900123@ims.mnc001.mcc234.3gppnetwork.org" and would be provisioned in 
+his ENUM record in Service Provider 1's Tier-2 DNS server as follows: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org!" . 
+
+If this subscriber then moved/ported over to Service Provider 2 in the UK, then this SIP URI 
+would be modified in Service Provider 1's Tier-2 DNS server to be 
+"SIP:+447700900123@ims.mnc002.mcc234.3gppnetwork.org" thus: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org!" . 
+
+ 
+
+C.3.1.3 Advantages and Disadvantages 
+
+A disadvantage of this option is that the newly subscribed network is reliant upon the number 
+range owning network to not only make the changes at the time of porting, but to also 
+support later additions and modifications to URIs and/or URLs; possibly relating to services 
+that may not be offered by the number range owning network. For example, if Service 
+
+
+Tier 2 ENUM for SP1Tier 2 ENUM for SP1Tier 1SP 1SP 2+447700900123-> NAPTR@SP2:
++447701000001-> NAPTR@SP2 
+:
++4477009Åc.-> NS SP1+4477010Åc.-> NS SP2:
++447700900122-> NAPTR@SP1+447700900123 -> NAPTR@SP1+447700900123 -> NS@SP2+447700900124-> NAPTR@SP1:
+Number range holder for: 
++ 4477009xxxxxNumber range holder for 
++4477010xxxxx+447700900123Holds redirection entries(NS records) for 
+.the Number range 
+holders (ONRH)
+Holds entries for 
+.all currently served 
+e.164 numbers, and 
+.ported numbers 
+within own number 
+range
+Provider 2 rolled-out an IP based service (that uses ENUM) before Service Provider 1, then 
+Service Provider 1 would have to provision in their Tier-2 DNS all the ENUM records for 
+those subscribers who have ported to Service Provider 2 with the new URI(s) and/or URL(s). 
+Service Provider 1 may also not be able to do this in a time period that is satisfactory to 
+Service Provider 2's launch of the new service. 
+
+C.3.1.4 Suitability 
+
+This option is suited to countries where their MNP is not realised using a central MNP 
+database. It may also be suitable for countries having no central Tier-1 ENUM server, but 
+where the Tier 1 functionality is hosted by the Tier-0. 
+
+C.3.2 Option 4 . Redirection at Tier-2 
+
+C.3.2.1 Description 
+
+This option consists of having a "normal" Tier-1 and Tier-2 however, the number range 
+owning network's Tier-2 DNS server storing for each ported-out subscriber, a special 
+redirection indicator for all incoming look-ups (effectively creating an extra "Tier-3" for all 
+ported out subscribers). The indicator provides a pointer to the subscribed network. This 
+"capture all" redirection is realised using a single NS record. This NS record redirects the 
+ENUM/DNS Resolver to the newly subscribed network's ENUM/DNS server by returning a 
+new DNS server to query. 
+
+ 
+
+Figure 20: : Redirection at Tier-2 
+
+
+
+C.3.2.2 Example 
+
+If the subscriber whose E.164 number is +44-7700-900123 is a subscriber of Service 
+Provider 1 in the UK, his SIP URI (for IMS) could be 
+"SIP:+447700900123@ims.mnc001.mcc234.3gppnetwork.org" and would be reflected in his 
+ENUM record as standard, thus: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+If this subscriber then moved over to Service Provider 2 in the UK, then the ENUM record 
+stored in Service Provider 1's Tier-2 DNS server would be something like the following: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 IN NS dns1.mnc002.mcc234.3gppnetwork.org 
+
+ 
+
+In Service Provider 2's DNS server, called "dns1.mnc002.mcc234.3gppnetwork.org", would 
+be needed something like the following: 
+
+$ORIGIN 3.2.1.0.0.9.0.0.7.7.4.4.e164enum.net. 
+
+ NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+The DNS resolver will more than likely already "know" the IP address for the DNS server 
+"dns1.mnc002.mcc234.3gppnetwork.org" due to previous look-ups. At the very least, it will 
+know the authoritative server for the domain "3gppnetwork.org" from the current set of 
+look-ups! This can be controlled further by increasing the said DNS Server's FQDN's TTL 
+(which is achievable as today operators change the IP addresses of their DNS servers very 
+infrequently). So in the common case, this solution will involve one extra DNS look-up, and 
+in the worst case involve two extra DNS look-ups. 
+
+C.3.2.3 Advantages and Disadvantages 
+
+The main advantage of this option is that it puts the subscribed operator in full control of the 
+URIs/URLs returned for a particular Tel URI, in the same manner as for option 2. 
+
+A disadvantage of this option is that the newly subscribed network is still reliant upon the 
+number range owning network to make updates in their ENUM Tier-2 DNS server. However, 
+unlike Option 3, the update is only minor, only has to be done once (or at least, only when 
+the subscriber changes/ports networks) and encompasses all services relating to ENUM; 
+whether they are supported by the number range owning network or not! 
+
+An explicit disadvantage over option 3 though is that the DNS Resolver may have to perform 
+one additional ENUM DNS look-up to resolve ported numbers. 
+
+ 
+
+
+C.3.2.4 Suitability 
+
+As with Option 3, this option is more suited to countries where their MNPs are not realised 
+using a central MNP database, and it is also suitable to countries where the Tier-1 
+functionality is hosted by the Tier 0. 
+
+ 
+
+C.3.3 Option 5 . Redirection at Tier-2 based on interaction with Legacy NP 
+systems 
+
+C.3.3.1 Description 
+
+This option consists of having a "normal" Tier-1 and Tier-2. However for numbers where the 
+Tier-2 servers do not have a corresponding ENUM record, the Tier-2 Interacts with a legacy 
+Number Portability system and based on legacy NP information, it determines the currently 
+serving Service Provider, and creates a NS response to redirect to that Service Provider. 
+The legacy Number Portability information used to identify the serving Service Provider can 
+for example be the IMSI, when available or SS7 routing information used by ISUP. 
+
+That information can be used to point to the appropriate NS record to use. 
+
+ 
+Legacy NP 
+SystemTier 2 ENUM for SP1Tier 2 ENUM for SP1Tier 1SP 1SP 2+447700900123-> NAPTR@SP2:
++447701000001-> NAPTR@SP2 
+:
++4477009Åc.-> NS SP1+4477010Åc.-> NS SP2+4477009Åc.-> Legacy NP:
++447700900122-> NAPTR@SP1+447700900123 -> NAPTR@SP1+447700900124-> NAPTR@SP1:
+Number range holder for: 
++ 4477009xxxxxNumber range holder for 
++4477010xxxxx+447700900123Holds redirection entries(NS records) for 
+.the Number range 
+holders (ONRH)
+Holds entries for 
+.all currently served e.164 
+numbers, and 
+.Interacts with Legacy NP 
+system for Ågported-outÅh
+number within number 
+range & based on NP data 
+redirects to the serving 
+Service Proved by 
+ÅgcreatingÅhan NS response:
++447700900123 -> SP2:
+
+Figure 21: Redirection at Tier-2 based on Legacy NP system interaction 
+
+
+ 
+
+C.3.3.2 Example 
+
+If the subscriber whose E.164 number is +44-7700-900123 is a subscriber of Service 
+Provider 1 in the UK, his SIP URI (for IMS) could be 
+
+
+"SIP:+447700900123@ims.mnc001.mcc234.3gppnetwork.org" and would be provisioned in 
+his ENUM record in Service Provider 1's Tier-2 DNS server as follows: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+If this subscriber then moved over to Service Provider 2 in the UK, then the ENUM record 
+stored in Service Provider 1's Tier 2 DNS server would be removed, and when a query for 
+this number is received Service Provider 1's Tier-2 DNS server would interact with the 
+Legacy NP system using for example an INAP or MAP query. 
+
+The response from the legacy NP system, informs that the number is now supported by 
+Service Provider 2, and something like the following would be created. 
+
+$ ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 IN NS dns1.mnc002.mcc234.3gppnetwork.org 
+
+ 
+
+In Service Provider 2's DNS server, called "dns1.mnc002.mcc234.3gppnetwork.org", would 
+be needed something like the following: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org!" . 
+
+ 
+
+In Service Provider 2's DNS server, called "dns1.mnc002.mcc234.3gppnetwork.org", would 
+be needed something like the following: 
+
+$ORIGIN 3.2.1.0.0.9.0.0.7.7.4.4.e164enum.net. 
+
+ NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+C.3.3.3 Advantages and Disadvantages 
+
+A disadvantage with this option is the need for interaction with the legacy NP system. At a 
+minimum this interaction can be compared with performing an additional query in recursive 
+mode. 
+
+Compared to alternative 4, this option does not require any updates to the number range 
+ownerÅfs ENUM/DNS server when a number is ported, more than that the E.164 entry for the 
+ported number need to be removed from the Number range owning Service ProviderÅfs Tier 2 
+server, and that information about how to translate the legacy number portability information 
+to an NS record pointing to the other Service ProviderÅfs ENUM DNS server need to be 
+configured. However this need only to be introduced once, and not for every ported number. 
+
+The main advantage of this option is that it puts the subscribed operator in full control of the 
+URIs/URLs returned for a particular Tel URI, in the same manner as for option 4. An explicit 
+advantage over option 4 is that the newly subscribed network is not reliant upon the number 
+
+
+range owning network to make any updates in their ENUM DNS server, as the newly 
+subscribed network is identified from the Legacy NP system. 
+
+C.3.3.4 Suitability 
+
+This option is possibly more suited in for countries no Tier 1 server and the Tier-1 
+functionality is hosted by the Tier-1, and where all Service Providers have access to full 
+Number Portability information, 
+
+C.3.4 Option 6 . Non-Authoritative response based on Legacy NP system 
+interaction 
+
+C.3.4.1 Description 
+
+This option consists of having a "normal" Tier-1 and Tier-2. However for Numbers where the 
+Tier-2 servers do not have a corresponding ENUM record, the Tier-2 may utilize legacy 
+Number portability information and based on that information create a non-authoritative final 
+response, where for example the legacy Number Portability routing information (for example 
+IMSI or routing number, and so on) can be used to create a the domain name to be used in 
+for example a SIP URI. 
+
+ 
+Legacy NP 
+SystemTier 2 ENUM for SP1Tier 2 ENUM for SP1Tier 1SP 1SP 2+447700900123-> NAPTR@SP2:
++447701000001-> NAPTR@SP2 
+:
++4477009Åc.-> NS SP1+4477010Åc.-> NS SP2+4477009Åc.-> Legacy NP:
++447700900122-> NAPTR@SP1+447700900123 -> NAPTR@SP1+447700900124-> NAPTR@SP1:
+Number range holder for: 
++ 4477009xxxxxNumber range holder for 
++4477010xxxxx+447700900123Holds redirection entries(NS records) for 
+.the Number range 
+holders (ONRH)
+Holds entries for 
+.all currently served e.164 
+numbers, and 
+.Interacts with Legacy NP 
+system for Ågported-outÅh
+number within number 
+range & ÅgcreatesÅha 
+ÅgNon-authoritative NAPTR 
+record based on NP data 
+:
++447700900123 -> SP2:
+
+Figure 22: Non-authoritative NAPTR response based on Legacy NP system 
+Interactions 
+
+
+C.3.4.2 Example 
+
+If the subscriber whose E.164 number is +44-7700-900123 is a subscriber of Service 
+Provider 1 in the UK, his SIP URI (for IMS) could be 
+
+
+"SIP:+447700900123@ims.mnc001.mcc234.3gppnetwork.org" and would be reflected in his 
+ENUM record as standard, thus: 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc001.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+If this subscriber then moved over to Service Provider 2 in the UK, then the ENUM record 
+stored in Service Provider 1's Tier-2 DNS server would be removed, and when a query for 
+this number is received Service Provider 1's Tier-2 DNS server would interact with the 
+Legacy NP system using for example an INAP or MAP query. 
+
+The response from the legacy NP system, informs that the number is now supported by 
+Service Provider 2, and something like the following would be created. 
+
+$ORIGIN 0.0.7.7.4.4.e164enum.net. 
+
+ 3.2.1.0.0.9 NAPTR 10 10 "u" "E2U+SIP" 
+
+ "!^.*$!sip:+447700900123@ims.mnc002.mcc234.3gppnetwork.org;user=phone!" . 
+
+ 
+
+The NAPTR RR record returned in this case may be considered as Non-authoritative as 
+even if it provided based on consent by Service Provider 2, it is created based on legacy 
+number portability information. In difference to Option 3, Service Provider 2 does not have 
+the possibility to individualize the NAPTR records per E.164 number. 
+
+C.3.4.3 Advantages and Disadvantages 
+
+A disadvantage with this option is the need for interaction with the legacy NP system. At a 
+minimum this interaction can be compared with performing an additional query in recursive 
+mode. 
+
+Another important disadvantage is that the currently serving Service Provider cannot decide 
+for which of his Ported-in numbers he wants a NAPTR Record returned. If the serving 
+Service Provider only wants to populate his ENUM DNS server with for numbers having an 
+IMS service, this information may not be available in the Legacy NP system, with the result 
+the NAPTR records will be returned also for numbers that for example only are served on 
+CS. 
+
+C.3.4.4 Suitability 
+
+This option is possibly more suited in for countries where no Tier 1 server and the Tier-1 
+functionality is hosted by the Tier-1, and where all Service Providers have access to full 
+Number Portability information, 
+
+ 
+
+
+C.3.5 Considerations when not all Servicer provider have a Tier-2 ENUM 
+DNS server 
+
+As mentioned, there may be problems with a decentralized Number portability solution if not 
+all Service Providers have a Tier-2 ENUM DNS server. 
+
+In case one Service Provider does not have an ENUM/DNS server, there is no Tier-2 
+ENUM/DNS server that would hold NAPTR or NS records for the numbers that have been 
+ported out to other Service Providers. 
+
+To allow a Service Provider who wants to be able to provide ENUM entries for all served 
+E.164 number, including ported-in numbers when a decentralized solution is used, a number 
+of methods that may help overcome the problem when not all Serve Providers have a Tier-2, 
+as proposed below. 
+
+C.3.5.1 Hosting of Ported-in numbers at the Tier-1 
+
+Although the Options 3, 4, 5 and 6 are decentralized in nature, and the Tier-1 only should 
+make redirects to the Number Range Holders, Service Providers make arrangement with the 
+Tier-1 (or Tier-0 if it hosts the Tier-1 functionality) ENUM/DNS server to host entries for 
+numbers ported in from a Service Provider not having a Tier-2 ENUM/DNS server. 
+
+This alternative can be used for all decentralized options. 
+
+C.3.5.2 Tier-1 redirects to alternative Service Provider Tier-2 server 
+
+For Options 5 and 6 which rely on information from Legacy NP systems, to determine the 
+currently serving Service Provider, one or more of the Tier-2 Service Providers could agree 
+to access the legacy NP system not only for his own Number ranges nut also for Number 
+ranges held by a Service Provider not having an ENUM DNS server. 
+
+The Tier-1 (or Tier-0 for countries where the Tier-1 is hosted by the Tier-0 server) could then 
+refer to the Alternative Servicer ProviderÅfs ENUM/DNS server when the number range owner 
+does not have a Tier-2. 
+
+If several or all Tier-2 Service Provider agree to do the same to share the cost and load, the 
+Tier-1 server, can provide multiple NS records with the same priority, one for each of the 
+ÅgparticipatingÅh Tier-2 Service ProviderÅfs ENUM/DNS servers. 
+
+DNS resolvers could then randomize which ÅgparticipatingÅh Tier-2 Service ProviderÅfs DNS 
+server they would access to resolve the number. 
+
+
+Annex D Forms for transfer of sub-domain of 
+Ågpub.3gppnetwork.orgÅh 
+
+D.1 Request form 
+
+
+ Organisation:
+Title:
+Name:
+Email:
+Mobile Number:
+MNO Name:
+MCC Value:
+MNC Value:
+CNAME record for MNO*CNAME record for provisioning 
+domain for an MNO shall follow the 
+format:
+<ABC>.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org 
+where <MNC>=mnc value of MNO,
+<MCC>=mcc value of MNO, 
+both values padded to 3 digits with 
+a leading "0" if it is 2-digit long.
+___.mnc___.mcc___.pub.3gppnetwork.orgZONE file for CNAMEIsZoneFilefortheidentifiedCNAMErecordcreatedonMNO'sDNS servers?
+YES / NOName / IP AddressLetter of AuthorizationPleasefillinandemail"LetterofAuthorizationforthetransferofthedomain"documentto3gppnetwork.org_delegation@gsma.comOrganisation:
+Title:
+Name:
+Email Address:
+Mobile Number:
+Date:
+Signature:
+Request Form for Transfer of sub-domain of pub.3gppnetworks.orgRequesteeIT Contact at MNOMNO InformationDNS Server Details(IP Address & FQDN)
+PleaseprovideMNO'sDNSserverdetails,wheretheZONEfileforCNAME record had been created.
+
+
+D.2 Letter of Authorization Template 
+
+Please fill out all required fields in the template and replace <ABC>, <MNC> and <MCC> as 
+specified in 6.5. 
+
+This letter can be adapted as per MNOÅfs selected Certificate BodyÅfs requirement. The letter 
+must be signed by GSMA. 
+
+ 
+
+
+gsma_logo_colour_rgb_sm 
+
+
+ 
+
+<Certificate Organisation Name> 
+
+ 
+
+<Contact Name at Certificate Organisation> 
+
+<Certificate Organisation Address> 
+
+<Certificate Organisation Fax Number/Email address> 
+
+ 
+
+ 
+
+Date: <Please type date> 
+
+ 
+
+To whom it may concern, 
+
+ 
+
+Dear Sir/Madam, 
+
+Re: Domain Authorization Letter 
+
+I confirm that: 
+
+Organization enrolling for the Digital Certificate set out below is: <Please type your MNOÅfs 
+full company name here> (ÅgCertificate ApplicantÅh) 
+
+Domain to be included in the certificate is: 
+
+<ABC>.mnc<MNC>.mcc<MCC>.pub.3gppnetwork.org (ÅgDomainÅh) 
+
+Registrant of the Domain is: GSM Association (ÅgRegistrantÅh) 
+
+Digital Certificate is the certificate relating to the Domain. 
+
+I am employed by the Registrant and am duly authorized to sign this Domain Authorization 
+Letter and to deal with all matters related to the registration of the Domain. 
+
+Certificate Applicant desires to install the Digital Certificate on its web server(s) for the 
+domain and ultimately to enable secure communications with its users. 
+
+
+Registrant acknowledges that it has granted the Certificate Applicant the right to use the 
+Domain as a common name in the Digital Certificate request referenced above and to 
+otherwise use the Domain in connection with its business. 
+
+Regards, 
+
+Full Name: Alex Williams 
+
+Job Title: IT Operation Manager 
+
+Organization: GSM Association 
+
+Signature:__________________________ 
+
+ 
+
+ 
+
+
+Document Management 
+
+Document History 
+
+Version 
+
+Date 
+
+Brief Description of Change 
+
+Approval 
+Authority 
+
+Editor / 
+Company 
+
+0.1.0 
+
+14 October 
+2004 
+
+First draft . skeleton. 
+
+- 
+
+Nick Russell, 
+Vodafone 
+
+0.2.0 
+
+10 May 
+2005 
+
+Second draft, with most sections filled in, or 
+at least with place holders. 
+
+- 
+
+Nick Russell, 
+Vodafone 
+
+0.2.1 
+
+11 May 
+2005 
+
+Changed the underlying Word template to 
+the new one. 
+
+- 
+
+Nick Russell, 
+Vodafone 
+
+0.3.0 
+
+15 
+November 
+2005 
+
+Enhancements of ENUM section, including 
+addition of Number Portability in ENUM, plus 
+minor corrections and update of template. 
+
+- 
+
+Nick Russell, 
+Vodafone 
+
+0.9.0 
+
+16 
+December 
+2005 
+
+Final draft for publication; contains only 
+minor corrections to formatting since 
+previous version. 
+
+- 
+
+Nick Russell, 
+Vodafone 
+
+1.0 
+
+16 
+December 
+2005 
+
+Approved for publication. 
+
+DAG 
+
+Nick Russell, 
+Vodafone 
+
+1.1 
+
+26 January 
+2006 
+
+Minor formatting corrections. 
+
+IREG 
+
+Nick Russell, 
+Vodafone 
+
+1.2 
+
+4 April 
+2006 
+
+Moved in the DNS information from IR.34, 
+ENUM section updated with the agreements 
+made in the ENUM adhoc, updated the list 
+of domains to provide a list with those 
+defined in and/or before 3GPP specification 
+set Rel-6. 
+
+ 
+
+This version of the present document is the 
+first version to be classified as 
+"Unrestricted". 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+1.3 
+
+9 August 
+2006 
+
+Clarification of references to 3GPP 
+documents (to show which specific release 
+is being referenced), addition of health 
+warnings about the old MMS URI prefix and 
+ENUMservice field values, addition of health 
+warning about SIP URI provisioning and 
+some general tidying-up/consolidation of 
+text. 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+2.0 
+
+30 April 
+2007 
+
+Addition of the "No Root" ENUM 
+architecture, plus some other miscellaneous 
+corrections. 
+
+DAG 
+
+Nick Russell, 
+Vodafone 
+
+2.1 
+
+18 October 
+2007 
+
+Minor restructuring to move ENUM material 
+into own section, clarification in GPRS 
+section and MMS section on using iterative 
+rather than recursive DNS queries, 
+clarification in MMS section of DNS usage 
+when utilising one or more MMS Hubs and 
+direct interconnects, and renaming of "No 
+Root" ENUM model to "Multiple Root". 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+
+
+
+Version 
+
+Date 
+
+Brief Description of Change 
+
+Approval 
+Authority 
+
+Editor / 
+Company 
+
+2.2 
+
+14 April 
+2008 
+
+Addition of information on OMA's SUPL 
+feature, including domain name used and a 
+new section giving a brief overview of the 
+feature (CR #10). Also, some minor 
+corrections to the ENUM section are 
+provided (CR #11). Finally, a global 
+replacement of "MNO" to "Service Provider" 
+has been done, in-line with IPX terminology. 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+3.0 
+
+26 
+September 
+2008 
+
+Includes new GSMA logo on coversheet, 
+change of "Operators" to "Service Providers" 
+in the spec title, and implementation of the 
+following CRs: 
+
+CR #12 (major): Implementation of the 
+conclusion from the ENUM White Paper 
+(EWP), plus other minor 
+corrections/enhancements. This includes 
+corrections to domain names in sub-sections 
+of 5.7 
+
+CR #13 (minor): Addition of EPC and ICS 
+specific sub-domains for .3gppnetwork.org. 
+
+CR #14 (minor): Addition of new sub-section 
+to ENUMservices section to specify the 
+content of the ENUMservices field for 
+services other than just those based on 
+IMS/SIP and MMS. 
+
+CR #15 (minor): Addition of information 
+about domain names, including clearer 
+indication of the current limitations of the 
+GRX/IPX domain names currently 
+supported. 
+
+Some minor editorial, non-technical 
+impacting corrections are also made. 
+
+DAG and 
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+3.1 
+
+8 
+December 
+2008 
+
+Corrections to footer, plus implementation of 
+the following CRs: 
+
+CR #16 (minor): Addition of the definition of 
+the "user=phone" SIP URI parameter in 
+URIs returned in IMS related ENUM 
+responses. 
+
+CR #17 (minor): Correction to 4.5.1 (IMS 
+section) to state that support of NAPTR RRs 
+are required in order to support SIP/IMS. 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+3.2 
+
+6 May 
+2009 
+
+Implementation of CR # 18 (minor): editorial 
+enhancements to sections 1-4, and 
+implementation of the recently approved 
+sub-domains of 3gppnetwork.org (as 
+requested by 3GPP and approved at Packet 
+#37 and on email). 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+
+
+
+Version 
+
+Date 
+
+Brief Description of Change 
+
+Approval 
+Authority 
+
+Editor / 
+Company 
+
+3.3 
+
+21 July 
+2009 
+
+Implementation of the following CRs: 
+
+CR #19 (minor): Add Internet assigned 
+domain names to be used as a sub-domain 
+under "3gppnetwork.org", in order to save all 
+Service Providers connected to the IPX 
+network to have to obtain an E.212 number 
+range in order to be addressable. Also, the 
+procedures section is updated to reflect this 
+change, and also better describe the current 
+state-of-the-art. 
+
+CR #20 (minor): Add IR.33 (GPRS Roaming 
+Guidelines) in the references section, add a 
+new domain name to be used for naming of 
+non-service specific nodes, add a new 
+section on hostnames and domains (based 
+on content from IR.33), provide extra detail 
+on DNS Server software (also based on 
+content from IR.33), add new section on 
+DNS Server naming, add new section on 
+Resource Record usage, and add 
+references to IR.33 and the GTP spec 
+(3GPP TS 29.060) in section 4.2 (GPRS). 
+Also, some instances of "operator" are 
+corrected to "Service Provider". 
+
+IREG 
+Packet 
+
+Nick Russell, 
+Vodafone 
+
+4.0 
+
+10 
+December 
+2009 
+
+Implementation of CR #21 (Major): To 
+document the lessons learned after the 
+ENUM trial, and to make the whole 
+specification of the GRX/IPX Carrier ENUM 
+take a more top-down approach. 
+
+ 
+
+New template also applied. 
+
+DAG #64 
+
+Nick Russell, 
+Vodafone 
+
+4.1 
+
+3 March 
+2010 
+
+Implementation of CR #22 (Minor): addition 
+of "bcast" sub-domain to 
+"mnc<MNC>.mcc<MCC>.pub.3gppnetwork.
+org". Minor editorial corrections also made, 
+including clarification on a zero being 
+inserted on the left side of any 2 digit MNCs 
+used in domain names e.g. 15 becomes 
+015. 
+
+IREG 
+Packet 
+(email 
+approval) 
+
+Nick Russell, 
+Vodafone 
+
+5.0 
+
+21 July 
+2010 
+
+Implementation of CR#23 (Major): Updates 
+to domain names used on the GRX/IPX 
+network and inter-SP links 
+
+DAG #71 
+
+Nick Russell, 
+Vodafone 
+
+5.1 
+
+13 August 
+2010 
+
+Implementation of the following CRs: 
+
+CR #24 (Minor): Support of IP versions in 
+DNS 
+
+CR #25 (Minor): ENUMservice field value for 
+SIP-I/PVI 
+
+IREG 
+Packet 
+(email 
+approval) 
+
+Nick Russell, 
+Vodafone 
+
+6.0 
+
+1 
+December 
+2011 
+
+Implementation of CR#26 (Major): Addition 
+of new '.ipxuni' domain name and sub-
+domain name used for "well known" XCAP 
+Root URI to 
+"mnc<MNC>.mcc<MCC>.ipxuni.3gppnetwork.org" 
+
+DAG#86 
+
+Gert Oster, 
+Ericsson 
+
+
+
+
+Version 
+
+Date 
+
+Brief Description of Change 
+
+Approval 
+Authority 
+
+Editor / 
+Company 
+
+7.0 
+
+ 
+
+Implementation of the following CRs 
+
+- CR #28 (Major): Addition of new 
+subdomain for RCS/RCS-e as 
+Ågrcs.mnc>mnc>.mcc<mcc>.pub.3gppnetwork.orgÅh 
+
+CR #29 (Major): Removal of sub domain 
+name for the ÅgXCAP root URIÅh from the 
+ÅgipxuniÅh domain name and adding a new sub 
+domain as 
+xcap.ims.mnc<mnc>.mcc<mcc>.pub.3gppnetwork.org, and adding a new subdomain for 
+bootstrapping when ISIM is used as 
+bsf.ims.mnc<mnc>.mcc<mcc>. 
+pub.3gppnetwork.org, 
+
+IREG#62 
+
+DAG#92 
+
+Gert Oster, 
+Ericsson 
+
+8.0 
+
+23/11/2012 
+
+Implemetation of the Following CRs 
+
+. CR 29 (Major) To briefly describe how 
+GRX/IPX providers can subscribe to 
+the RootDNS and access its services 
+. CR 30(Major) Adding the possibility to 
+provide Non-authoritative final ENUM 
+responses for ported-out users based 
+on Legacy Number Portability 
+Information 
+. CR 31(Major) Adding examples of 
+Number portability solutions allowing 
+the IPX/GRX ENUM to work for 
+countries without a national Tier-1 
+ENUM DNS server, as requested by 
+IWG IMQ and RCS-e. 
+. CR 32(Major) Removal of text not 
+considering that Local Breakout for it 
+specified method for IMS roaming in 
+relation to VoLTE 
+. CR 33(Major) Adding a further example 
+of ENUM NAPTR records with regular 
+expressions where part of the result 
+shall be substituted by the ÅgoriginalÅh 
+E.164 number. 
+. CR 34(Major) To show that a Service 
+provider does not need to provide all 
+data for domain names the Service 
+provider is authoritative for one DNS 
+but that they may choose to imply 
+multiple levels of Authoritative DNSs 
+where a First level may refer to the 
+Second level Authoritative DNS severs. 
+
+
+IREG#63 
+
+DAG#99 
+
+Gert Oster, 
+
+Ericsson 
+
+
+
+
+Version 
+
+Date 
+
+Brief Description of Change 
+
+Approval 
+Authority 
+
+Editor / 
+Company 
+
+9.0 
+
+21/10/2013 
+
+Implemtation of the following CRs 
+
+. CR1001 (Major) To add the 
+Ågipxnetwork.orgÅh TLD for IPX providers 
+that need a subdomain to identify their 
+equipment and realms. 
+. CR1002 (Major) To add the subdomain 
+used for interworking untrusted non-
+3GPP access networks to the EPC 
+using the ePDG. 
+. CR1003 (Major) to clarify that text on 
+provisioning in clause 5.4.3 only relates 
+to ENUM and not HSS. 
+. CR1004 (Major) To describe the 
+routine for delegation of 
+"pub.3gppnetwork.org" sub-domains 
+. CR1005 (Major) To provide information 
+on DNS resolution when IR.21 
+information is used. 
+. CR 1006 (Major) To correct the e-mail 
+address for Root DNS questions to 
+reflect the new Åggsma.comÅh e-mail 
+address 
+
+
+IREG#65 
+
+Gert Oster, 
+
+Ericsson 
+
+10.0 
+
+24/04/2014 
+
+Implemetation of the following CRs 
+
+. CR 1007 (Major) To add the 
+subdomain for the ÅgOAM System 
+RealmÅh that can be used for IP 
+autoconfiguration services e.g. in case 
+Self-Organizing Networks (SON) as 
+defined by 3GPP 
+. CR 1008 (Major) To provide guidance 
+on naming of IMS Nodes, and to inform 
+where guidance on EPC node name 
+can be found 
+
+
+IREG#66 
+
+Gert Oster, 
+
+Ericsson 
+
+11.0 
+
+16/04/2015 
+
+Implemetation of the following CRs 
+
+. CR 1009 (Major) To add pointers to 
+IR.88 for DNS configuration 
+requirements in various 2G/3G and 
+LTE coexistence scenarios. 
+. CR 1010 (Major) To add the 
+subdomain for ÅgBootstrapping of MBMS 
+service AnnouncementsÅh 
+. CR 1011 (Major) To correct e-mail 
+address to Delegation of 
+Ågpub.3gppnetwork.orgÅh 
+
+
+NG#01 
+
+Gert Oster, 
+
+Ericsson 
+
+
+
+
+Other Information 
+
+Type 
+
+Description 
+
+Document Owner 
+
+IREG Packet 
+
+Editor / Company 
+
+Gert Oster, Ericsson 
+
+
+
+ 
+
+It is our intention to provide a quality product for your use. If you find any errors or omissions, 
+please contact us with your comments. You may notify us at prd@gsma.com 
+
+Your comments or suggestions & questions are always welcome. 
+
+ 
+
+

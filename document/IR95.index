@@ -1,0 +1,77 @@
+1 
+1.1 
+1.2 Relationship to Existing 
+1.3 
+1.4 Definition of 
+1.5 Document Cross-
+2 Applicable 
+3 IP 
+4 SIP Methods & 
+4.1 SIP Method 
+4.2 SIP Status Code 
+4.3 SIP Header 
+4.3.1 SIP 
+4.3.2 SIP 
+4.4 SIP Header Support (
+4.5 SIP Header Support (Per Method / 
+4.5.1 Additional 
+4.5.2 Header 
+5 SIP Message 
+6 SIP Signalling Mode 
+7 Numbering & Addressing 
+8 SIP Message Bodies 
+9 SIP Options Tags 
+10 Media Control 
+10.1 SIP SDP Offer / Answer 
+10.2 RTP Profile 
+10.3 Codecs 
+10.3.1 Audio Codecs 
+10.3.2 Video Codecs 
+10.3.3 Global Text Telephony (GTT) 
+10.3.4 DTMF 
+10.3.5 Codex Negotiation/Handling at the NNI 
+10.4 Early Media Detection 
+10.5 SDP Contents 
+10.6 RTP/RTCP Packet Source 
+11 IP Version 
+Appendix A SIP Header Examples (Informational) 
+Appendix B SIP Message Examples (Informational) 
+Appendix B.1 . Voice Session Establishment & Teardown 
+Appendix B.2 . Multi-Media Session Establishment & Teardown 
+Appendix B.3 . Use of session timer 
+Appendix B.4 . Use of Early Media 
+Appendix B.5 . IMS Registration 
+Appendix B.6 . MMTel Services 
+Originating Identification Presentation (OIP) 
+Originating Identification Restriction (OIR) 
+Terminating Identification Presentation (TIP) 
+Terminating Identification Restriction (TIR) 
+Communication Waiting (CW) 
+Outgoing Communication Barring (OCB) 
+Incoming Communication Barring (ICB) 
+Communication Hold (CH) 
+Communication Forwarding (CFx) 
+Message Waiting Indication (MWI) 
+Ad-Hoc Conference 
+Appendix B.7 . RCS Capability Exchange 
+Appendix B.8 . RCS CPM Messaging (Pager Mode) 
+Appendix B.9 . RCS CPM Messaging (Large Message Mode) 
+Appendix B.10 . RCS Image Share (IS) 
+Appendix B.11 . RCS Video Share (VS) 
+Appendix B.12 . RCS FT (CPM Based) 
+Appendix B.13 . RCS FT (SIMPLE Based) 
+Appendix B.14 . RCS 1-To-1 Chat (CPM Based) 
+Appendix B.15 . RCS 1-To-1 Chat (SIMPLE Based) 
+Appendix B.16 . RCS Geolocation Push (CPM Based) 
+Appendix B.17 . RCS Geolocation Pull (CPM Based) 
+Appendix B.18 . Social Presence (Overview) 
+Appendix B.19 . Publication of Social Presence Information. 
+Appendix B.20 . Subscription to Social Presence Information. 
+Appendix B.21 . Subscription to Social Presence Watcher Information 
+Appendix B.22 . Capability Discovery by Presence 
+Appendix B.23 . RCS Group Chat (from start of session) 
+Appendix B.24 . RCS Group Chat (from initial 1:1 Chat) 
+Appendix C The List of Selected Option Items for the NNI (Informative) 
+Document Management 
+Document History 
+Other Information 
